@@ -1,8 +1,8 @@
 package health
 
 import (
-	"fmt"
 	"mysite/features/health/internal"
+	"mysite/model"
 	"net/http"
 
 	"github.com/go-chi/render"
@@ -13,7 +13,7 @@ type api struct {
 }
 
 type service interface {
-	HealthCheck() int
+	HealthCheck() model.HealthResponse
 }
 
 func NewHandler() *api {
@@ -23,6 +23,5 @@ func NewHandler() *api {
 }
 
 func (a *api) Health(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("test")
-	render.PlainText(w, r, http.StatusText(a.svc.HealthCheck()))
+	render.JSON(w, r, a.svc.HealthCheck())
 }

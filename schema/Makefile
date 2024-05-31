@@ -18,21 +18,13 @@ install:
 	@yarn install --frozen-lockfile
 	@echo "Dependencies installed successfully."
 
-lint:
-	@echo "Linting YAML..."
-	@npx @redocly/cli lint src/index.yml --skip-rule=info-license
-
-bundle:
+bundle: validate
 	@echo "Bundling YAML..."
-	@npx @redocly/cli bundle src/index.yml --output $(BUILD_DIRECTORY)/index.yaml --ext yaml
+	@npx swagger-cli bundle -o build/index.yml -t yaml ./src/index.yml
 
 build: bundle
 	@echo "Generating models and APIs..."
 	@$(call generate, $(BUILD_DIRECTORY))
 	@echo "Models and APIs generated successfully."
-gen:
-	@npx openapi-generator-cli generate -i ./src/index.yml -g ruby -o /tmp/test/
 validate:
 	@npx swagger-cli validate ./src/index.yml
-swagger-bundle:validate
-	@npx swagger-cli bundle -o build/index.yml -t yaml ./src/index.yml
