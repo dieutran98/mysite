@@ -1,0 +1,79 @@
+version: "3.8"
+services:
+  api:
+    build:
+      context: ./api
+    container_name: api.mysite
+    env_file:
+      - ./api/.env
+    environment:
+      ENV: ${ENV:-develop}
+    volumes:
+      - ./api:/api
+      - ./schema/build:/api/schema/build
+    ports:
+      - "3000:3000"
+    command: make run
+
+  schema:
+    build:
+      context: ./schema
+    container_name: schema.mysite
+    command: bash -c "tail -f /dev/null"
+    environment:
+      ENV: ${ENV:-develop}
+    volumes:
+      - ./schema:/schema
+
+#   postgresql:
+#     image: postgres:16.0-alpine
+#     container_name: gecko-demo-postgres
+#     command: postgres -c max_connections=200
+#     env_file:
+#     - .env
+#     environment:
+#       ENV: ${ENV:-develop}
+#     volumes:
+#       - ./util-containers/postgresql/data:/var/lib/postgresql/data
+#       - ./util-containers/postgresql/init:/docker-entrypoint-initdb.d
+#     ports:  
+#       - "5432:5432"
+
+
+  # Migration service to relevant datastores.
+#   migrate:
+#     platform: linux/amd64
+#     build:
+#       context: ./packages/migrate
+#     container_name: gecko-demo-migrate
+#     env_file:
+#       - .env
+#     environment:
+#       ENV: ${ENV:-develop}
+#     volumes:
+#       - ./packages/migrate/ddl:/migrate/ddl
+#       - ./packages/migrate/makefile:/migrate/makefile
+#       - ./.env:/migrate/.env
+
+#   redis:
+#     image: redis:7.2-alpine
+#     container_name: gecko-demo-redis
+#     env_file:
+#       - .env
+#     ports:
+#       - '6379:6379'
+#     command: redis-server --save 20 1 --loglevel warning --requirepass ${REDIS_PASSWORD}
+#     volumes: 
+#       - ./util-containers/redis/data:/data
+#   worker-fetchohlc:
+#     platform: linux/amd64
+#     build:
+#       context: ./packages/workers/fetchohlc
+#       # dockerfile: ./Dockerfile.release
+#     container_name: gecko-demo-worker-ohlc
+#     env_file:
+#       - .env
+#     environment:
+#       ENV: ${ENV:-develop}
+#     volumes:
+#       - ./packages/workers/fetchohlc:/worker

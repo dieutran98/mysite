@@ -1,0 +1,7 @@
+type: object
+description: Error Response Object
+properties:
+  code:
+    type: string
+  errorText:
+    type: string

@@ -1,0 +1,23 @@
+openapi: 3.0.0
+info:
+  description: This is API specification for MySite project.
+  title: Mysite API specification
+  version: "1.0"
+servers:
+  - url: /
+security:
+  - {}
+tags:
+  - name: health
+    description: Health Feature
+
+paths:
+  /health:
+    get:
+      $ref: ./features/health/get.yml
+  
+components:
+  schemas:
+    HealthResponse:
+      $ref: ./features/health/HealthResponse.yml
+    

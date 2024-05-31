@@ -1,0 +1,12 @@
+operationId: health
+summary: Get health
+description: Get health
+tags:
+  - health
+responses:
+  200:
+    description: OK
+    content:
+      application/json:
+        schema:
+          $ref: ../../index.yml#/components/schemas/HealthResponse

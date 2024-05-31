@@ -1,0 +1,35 @@
+openapi: 3.0.0
+info:
+  description: This is API specification for MySite project.
+  title: Mysite API specification
+  version: '1.0'
+servers:
+  - url: /
+security:
+  - {}
+tags:
+  - name: health
+    description: Health Feature
+paths:
+  /health:
+    get:
+      operationId: health
+      summary: Get health
+      description: Get health
+      tags:
+        - health
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      description: Error Response Object
+      properties:
+        message:
+          type: string
