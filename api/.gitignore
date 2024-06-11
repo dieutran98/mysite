@@ -1,3 +1,4 @@
 schema
 .env
 tmp
+/config/*.json

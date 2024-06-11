@@ -195,7 +195,7 @@ func (p *prettyHandler) printAttributes(ctx context.Context, record slog.Record)
 		Level: p.option.Level.Level(),
 		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
 			switch a.Key {
-			case "time", "level", "msg", "function":
+			case "time", "level", "function":
 				return slog.Attr{}
 			default:
 				return a
