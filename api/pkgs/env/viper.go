@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-type Configure interface {
+type viperConfigure interface {
 	SetConfigName(name string)
 	SetConfigType(typ string)
 	AddConfigPath(path string)
@@ -18,17 +18,37 @@ type Configure interface {
 	Unmarshal(rawVal interface{}, opts ...viper.DecoderConfigOption) error
 }
 
-func setConfigFile(configure Configure) error {
-	configure.SetConfigName("env.develop") // name of config file (without extension)
-	configure.SetConfigType("json")
-	configure.AddConfigPath("./config")
-	configure.OnConfigChange(onConfigChange(configure))
-	configure.WatchConfig()
-	return configure.ReadInConfig()
+type viperConfig struct {
+	viperCfg viperConfigure
 }
 
-func mappingStruct(configure Configure) error {
-	return configure.Unmarshal(&internalEnv, viperUnmarshalOption)
+func newViperConfig() viperConfig {
+	return viperConfig{
+		viperCfg: viper.New(),
+	}
+}
+
+func (v viperConfig) setConfigFile() error {
+	v.viperCfg.SetConfigName("env.develop") // name of config file (without extension)
+	v.viperCfg.SetConfigType("json")
+	v.viperCfg.AddConfigPath("./config")
+
+	v.viperCfg.OnConfigChange(v.onConfigChangeFunc)
+	v.viperCfg.WatchConfig()
+
+	return v.viperCfg.ReadInConfig()
+}
+
+func (v viperConfig) mappingStruct() error {
+	return v.viperCfg.Unmarshal(&internalEnv, viperUnmarshalOption)
+}
+
+func (v viperConfig) onConfigChangeFunc(e fsnotify.Event) {
+	slog.Info("env changed.", "fileName", e.Name)
+	v.viperCfg.ReadInConfig()
+	if err := v.mappingStruct(); err != nil {
+		slog.Error("failed to unMarshal env: ", "error", err.Error())
+	}
 }
 
 func viperUnmarshalOption(c *mapstructure.DecoderConfig) {
@@ -36,14 +56,4 @@ func viperUnmarshalOption(c *mapstructure.DecoderConfig) {
 		return
 	}
 	c.TagName = "json"
-}
-
-func onConfigChange(config Configure) func(e fsnotify.Event) {
-	return func(e fsnotify.Event) {
-		slog.Info("env changed.", "fileName", e.Name)
-		config.ReadInConfig()
-		if err := mappingStruct(config); err != nil {
-			slog.Error("failed to unMarshal env: ", "error", err.Error())
-		}
-	}
 }
