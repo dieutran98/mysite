@@ -1,11 +1,12 @@
 package health
 
 import (
-	"mysite/features/health/internal"
-	"mysite/model"
 	"net/http"
 
 	"github.com/go-chi/render"
+
+	"mysite/features/health/internal"
+	"mysite/models/model"
 )
 
 type api struct {

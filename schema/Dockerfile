@@ -14,6 +14,6 @@ RUN echo "Installing system dependencies.." && \
 ENV ROOT /schema
 
 WORKDIR $ROOT
-COPY Makefile package.json yarn.lock ./
+COPY Makefile package.json ./
 
 RUN make install
