@@ -1,9 +1,10 @@
 package internal
 
 import (
-	"mysite/model"
-	"mysite/utils/ptrconv"
 	"net/http"
+
+	"mysite/models/model"
+	"mysite/utils/ptrconv"
 )
 
 type service struct{}
