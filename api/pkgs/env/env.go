@@ -21,16 +21,27 @@ type database struct {
 	TransactionTimeout int    `json:"transactionTimeout"`
 }
 
+type configure interface {
+	setConfigFile() error
+	mappingStruct() error
+}
+
 var (
 	internalEnv appEnv
 )
 
-func ReadEnv(config Configure) error {
-	if err := setConfigFile(config); err != nil {
+var newConfigure = func() configure {
+	return newViperConfig()
+}
+
+func ReadEnv() error {
+	configure := newConfigure()
+
+	if err := configure.setConfigFile(); err != nil {
 		return errors.Wrap(err, "failed set config file")
 	}
 
-	if err := mappingStruct(config); err != nil {
+	if err := configure.mappingStruct(); err != nil {
 		return errors.Wrap(err, "failed to mapping env to struct")
 	}
 

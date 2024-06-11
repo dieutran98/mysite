@@ -14,10 +14,6 @@ type viperMock struct {
 	expectErr error
 }
 
-func (m *viperMock) setExpect(viperM viperMock) {
-	*m = viperM
-}
-
 func (m *viperMock) SetConfigName(name string) {
 }
 
@@ -58,7 +54,12 @@ func TestSetConfigFile(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			require.Equal(t, tt.expectValue, setConfigFile(&viperMock{expectErr: tt.expectValue}))
+			viperCfg := viperConfig{
+				viperCfg: &viperMock{
+					expectErr: tt.expectValue,
+				},
+			}
+			require.Equal(t, tt.expectValue, viperCfg.setConfigFile())
 		})
 	}
 }
@@ -80,7 +81,12 @@ func TestMappingStruct(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			require.Equal(t, tt.expectValue, mappingStruct(&viperMock{expectErr: tt.expectValue}))
+			viperCfg := viperConfig{
+				viperCfg: &viperMock{
+					expectErr: tt.expectValue,
+				},
+			}
+			require.Equal(t, tt.expectValue, viperCfg.mappingStruct())
 		})
 	}
 }
@@ -113,7 +119,12 @@ func TestOnConfigChange(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			onConfigChange(&viperMock{expectErr: tt.expectValue})(fsnotify.Event{Name: "test"})
+			viperCfg := viperConfig{
+				viperCfg: &viperMock{
+					expectErr: tt.expectValue,
+				},
+			}
+			viperCfg.onConfigChangeFunc(fsnotify.Event{Name: "test"})
 		})
 	}
 }
