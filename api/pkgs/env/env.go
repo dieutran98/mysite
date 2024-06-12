@@ -24,6 +24,7 @@ type database struct {
 type configure interface {
 	setConfigFile() error
 	mappingStruct() error
+	setDefault() error
 }
 
 var (
@@ -36,6 +37,10 @@ var newConfigure = func() configure {
 
 func ReadEnv() error {
 	configure := newConfigure()
+
+	if err := configure.setDefault(); err != nil {
+		return errors.Wrap(err, "failed to set default config")
+	}
 
 	if err := configure.setConfigFile(); err != nil {
 		return errors.Wrap(err, "failed set config file")

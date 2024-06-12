@@ -19,6 +19,10 @@ func (c configureMock) mappingStruct() error {
 	return c.expectErr
 }
 
+func (c configureMock) setDefault() error {
+	return c.expectErr
+}
+
 func TestReadEnv(t *testing.T) {
 	testCases := []struct {
 		name        string

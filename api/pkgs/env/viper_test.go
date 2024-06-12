@@ -14,20 +14,17 @@ type viperMock struct {
 	expectErr error
 }
 
-func (m *viperMock) SetConfigName(name string) {
-}
+func (m *viperMock) SetConfigName(name string) {}
 
-func (m *viperMock) SetConfigType(typ string) {
-}
+func (m *viperMock) SetConfigType(typ string) {}
 
-func (m *viperMock) AddConfigPath(path string) {
-}
+func (m *viperMock) AddConfigPath(path string) {}
 
-func (m *viperMock) OnConfigChange(run func(e fsnotify.Event)) {
-}
+func (m *viperMock) OnConfigChange(run func(e fsnotify.Event)) {}
 
-func (m *viperMock) WatchConfig() {
-}
+func (m *viperMock) WatchConfig() {}
+
+func (m *viperMock) SetDefault(key string, value interface{}) {}
 
 func (m *viperMock) ReadInConfig() error {
 	return m.expectErr

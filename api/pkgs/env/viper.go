@@ -16,6 +16,7 @@ type viperConfigure interface {
 	WatchConfig()
 	ReadInConfig() error
 	Unmarshal(rawVal interface{}, opts ...viper.DecoderConfigOption) error
+	SetDefault(key string, value interface{})
 }
 
 type viperConfig struct {
@@ -26,6 +27,16 @@ func newViperConfig() viperConfig {
 	return viperConfig{
 		viperCfg: viper.New(),
 	}
+}
+
+func (v viperConfig) setDefault() error {
+	v.viperCfg.SetDefault("database.connmaxlifeidle", 30)
+	v.viperCfg.SetDefault("database.transactiontimeout", 30)
+	v.viperCfg.SetDefault("database.connmaxlifetime", 30)
+	v.viperCfg.SetDefault("database.connmaxopen", 100)
+	v.viperCfg.SetDefault("database.sslmode", "disable")
+	v.viperCfg.SetDefault("database.port", "5432")
+	return nil
 }
 
 func (v viperConfig) setConfigFile() error {
