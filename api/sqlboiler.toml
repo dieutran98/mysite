@@ -1,0 +1,6 @@
+[psql]
+# Removes migrations table, the name column from the addresses table, and
+# secret_col of any table from being generated. Foreign keys that reference tables
+# or columns that are no longer generated because of whitelists or blacklists may
+# cause problems.
+blacklist = ["schema_migrations"]
