@@ -46,14 +46,18 @@ func NewBoilerTransaction(ctx context.Context, fn ExecuteQueriesFunc) error {
 
 	// execute queries
 	if err := fn(ctx, tx); err != nil {
+		if err := tx.Rollback(); err != nil {
+			slog.Error("rollback error", logger.AttrError(errors.Wrap(err, "failed rollback")))
+		}
 		return errors.Wrap(err, "failed to execute queries")
 	}
 
 	// rollback if running as test
 	if utils.CheckIsRunAsTest(ctx) {
 		if err := tx.Rollback(); err != nil {
-			return errors.Wrap(err, "failed to roll back")
+			slog.Error("rollback error", logger.AttrError(errors.Wrap(err, "failed rollback")))
 		}
+		return nil
 	}
 
 	if err := tx.Commit(); err != nil {
