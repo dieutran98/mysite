@@ -52,7 +52,7 @@ func TestReadEnv(t *testing.T) {
 }
 
 func TestGetEnv(t *testing.T) {
-	internalEnv = appEnv{
+	internalEnv = AppEnv{
 		Database: database{
 			Database: "test",
 		},

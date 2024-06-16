@@ -50,7 +50,8 @@ services:
     environment:
       ENV: ${ENV:-develop}
     volumes:
-      - ./migration:/migrate
+      - ./migration/Makefile:/migrate/Makefile
+      - ./api/migration/ddl:/migrate/ddl
 
 #   redis:
 #     image: redis:7.2-alpine
