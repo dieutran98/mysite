@@ -4,6 +4,7 @@ services:
     build:
       context: ./api
     container_name: api.mysite
+    command: make run
     env_file:
       - ./api/.env
     environment:
@@ -13,7 +14,6 @@ services:
       - ./schema/build:/api/schema/build
     ports:
       - "3000:3000"
-    command: make run
 
   schema:
     build:
@@ -25,35 +25,33 @@ services:
     volumes:
       - ./schema:/schema
 
-#   postgresql:
-#     image: postgres:16.0-alpine
-#     container_name: gecko-demo-postgres
-#     command: postgres -c max_connections=200
-#     env_file:
-#     - .env
-#     environment:
-#       ENV: ${ENV:-develop}
-#     volumes:
-#       - ./util-containers/postgresql/data:/var/lib/postgresql/data
-#       - ./util-containers/postgresql/init:/docker-entrypoint-initdb.d
-#     ports:  
-#       - "5432:5432"
+  postgresql:
+    image: postgres:16.0-alpine
+    container_name: postgres.mysite
+    env_file:
+    - ./api/.env
+    environment:
+      ENV: ${ENV:-develop}
+    volumes:
+      - ./util-containers/postgresql/data:/var/lib/postgresql/data
+      - ./util-containers/postgresql/init:/docker-entrypoint-initdb.d
+    ports:  
+      - "5432:5432"
 
 
   # Migration service to relevant datastores.
-#   migrate:
-#     platform: linux/amd64
-#     build:
-#       context: ./packages/migrate
-#     container_name: gecko-demo-migrate
-#     env_file:
-#       - .env
-#     environment:
-#       ENV: ${ENV:-develop}
-#     volumes:
-#       - ./packages/migrate/ddl:/migrate/ddl
-#       - ./packages/migrate/makefile:/migrate/makefile
-#       - ./.env:/migrate/.env
+  migrate:
+    build:
+      context: ./migration
+    container_name: migrate.mysite
+    command: bash -c "tail -f /dev/null"
+    env_file:
+      - ./api/.env
+    environment:
+      ENV: ${ENV:-develop}
+    volumes:
+      - ./migration/Makefile:/migrate/Makefile
+      - ./api/migration/ddl:/migrate/ddl
 
 #   redis:
 #     image: redis:7.2-alpine
