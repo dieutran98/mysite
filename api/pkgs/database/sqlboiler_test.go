@@ -2,7 +2,10 @@ package database
 
 import (
 	"context"
+	"log/slog"
 	"mysite/models/pgmodel"
+	"mysite/pkgs/logger"
+	"os"
 	"testing"
 
 	"github.com/friendsofgo/errors"
@@ -11,13 +14,24 @@ import (
 )
 
 func TestNewBoilerTransaction(t *testing.T) {
+	logger.SetLogger(os.Stdout)
+	logger.SetLogLevel(slog.LevelDebug)
 	assert.NoError(t, SetupDatabase())
 
-	assert.NoError(t, NewBoilerTransaction(context.Background(), testExecuteQueries))
+	{
+		// success
+		assert.NoError(t, NewBoilerTransaction(context.Background(), testSuccessQueries))
+	}
+
+	{
+		// failed, expect roll back
+		assert.Error(t, NewBoilerTransaction(context.Background(), testFailedQueries))
+
+	}
 
 }
 
-func testExecuteQueries(ctx context.Context, tx boil.ContextTransactor) error {
+func testSuccessQueries(ctx context.Context, tx boil.ContextTransactor) error {
 	user := pgmodel.UserAccount{
 		UserName: "test",
 		Password: "test",
@@ -35,4 +49,8 @@ func testExecuteQueries(ctx context.Context, tx boil.ContextTransactor) error {
 		return errors.New("invalid data inserted")
 	}
 	return nil
+}
+
+func testFailedQueries(ctx context.Context, tx boil.ContextTransactor) error {
+	return errors.New("some error")
 }
