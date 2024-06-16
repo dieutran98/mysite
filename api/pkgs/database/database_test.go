@@ -16,10 +16,10 @@ func TestMain(m *testing.M) {
 	}
 
 	defer func() {
+		Close()
 		if err := database.PurgeResource(pool, resource); err != nil {
 			fmt.Println("failed to purge resource")
 		}
-		Close()
 	}()
 	m.Run()
 }
