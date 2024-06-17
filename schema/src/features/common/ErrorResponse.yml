@@ -1,7 +1,9 @@
 type: object
 description: Error Response Object
 properties:
-  code:
-    type: string
+  appCode:
+    type: integer
   errorText:
+    type: string
+  statusText:
     type: string
