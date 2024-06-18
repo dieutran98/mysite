@@ -107,8 +107,6 @@ func (p *prettyHandler) Handle(ctx context.Context, record slog.Record) error {
 }
 
 func (p *prettyHandler) write(data []byte) error {
-	p.mutex.Lock()
-	defer p.mutex.Unlock()
 	if _, err := p.writer.Write(data); err != nil {
 		return errors.Wrap(err, "failed write log")
 	}

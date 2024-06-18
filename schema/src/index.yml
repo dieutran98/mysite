@@ -15,9 +15,15 @@ paths:
   /health:
     get:
       $ref: ./features/health/get.yml
+  /register:
+    post:
+      $ref: ./features/register/post.yml
   
 components:
   schemas:
     HealthResponse:
       $ref: ./features/health/HealthResponse.yml
-    
+    ErrorResponse:
+      $ref: ./features/common/ErrorResponse.yml
+    RegisterRequest:
+      $ref: ./features/register/RegisterRequest.yml

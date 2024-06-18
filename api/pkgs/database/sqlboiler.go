@@ -3,9 +3,9 @@ package database
 import (
 	"context"
 	"log/slog"
+	"mysite/constants"
 	"mysite/pkgs/env"
 	"mysite/pkgs/logger"
-	"mysite/utils"
 	"time"
 
 	"github.com/friendsofgo/errors"
@@ -55,7 +55,7 @@ func NewBoilerTransaction(ctx context.Context, fn ExecuteQueriesFunc) error {
 	}
 
 	// rollback if running as test
-	if utils.CheckIsRunAsTest(ctx) {
+	if checkIsRunAsTest(ctx) {
 		if err := tx.Rollback(); err != nil {
 			slog.Error("rollback error", logger.AttrError(errors.Wrap(err, "failed rollback")))
 		} else {
@@ -69,4 +69,9 @@ func NewBoilerTransaction(ctx context.Context, fn ExecuteQueriesFunc) error {
 	}
 
 	return nil
+}
+
+func checkIsRunAsTest(ctx context.Context) bool {
+	isTesting, found := ctx.Value(constants.Testing).(bool)
+	return found && isTesting
 }
