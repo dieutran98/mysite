@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"mysite/pkgs/env"
+	"sync"
 	"time"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -16,10 +17,15 @@ type DB struct {
 
 var (
 	internalDB DB
+	once       sync.Once
 )
 
 func SetupDatabase() error {
-	return newBoilerDb()
+	var err error
+	once.Do(func() {
+		err = newBoilerDb()
+	})
+	return err
 }
 
 func Close() error {
