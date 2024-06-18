@@ -1,8 +1,10 @@
 package database
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
+	"mysite/constants"
 	"mysite/migration"
 	"mysite/pkgs/env"
 	"time"
@@ -52,6 +54,17 @@ func SetupDatabaseForTesting() (*dockertest.Pool, *dockertest.Resource, error) {
 	}
 
 	return pool, resource, nil
+}
+
+func PurgeResource(pool *dockertest.Pool, resource *dockertest.Resource) error {
+	if pool == nil {
+		return errors.New("pool is empty")
+	}
+	if resource == nil {
+		return errors.New("resource is empty")
+	}
+
+	return pool.Purge(resource)
 }
 
 func createDockerPool() (*dockertest.Pool, error) {
@@ -109,17 +122,6 @@ func checkIsDatabaseRunning(pool *dockertest.Pool) error {
 	})
 }
 
-func PurgeResource(pool *dockertest.Pool, resource *dockertest.Resource) error {
-	if pool == nil {
-		return errors.New("pool is empty")
-	}
-	if resource == nil {
-		return errors.New("resource is empty")
-	}
-
-	return pool.Purge(resource)
-}
-
 func connectDb() (*sql.DB, error) {
 	db, err := sql.Open("pgx", connectUrl())
 	if err != nil {
@@ -163,4 +165,9 @@ func updateEnv(resource *dockertest.Resource) error {
 	}
 
 	return nil
+}
+
+func SetTestTransactionCtx(ctx context.Context) context.Context {
+	ctx = context.WithValue(ctx, constants.Testing, true)
+	return ctx
 }
