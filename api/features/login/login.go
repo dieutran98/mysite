@@ -2,7 +2,6 @@ package login
 
 import (
 	"context"
-	"encoding/json"
 	"log/slog"
 	"mysite/features/login/internal"
 	"mysite/models/model"
@@ -30,16 +29,10 @@ func NewHandler() *api {
 }
 
 func (a api) Login(w http.ResponseWriter, r *http.Request) {
-	if r.Body == nil || r.Body == http.NoBody {
-		if err := render.Render(w, r, httputil.NewFailureRender(errors.Wrap(httputil.ErrInvalidRequest, "empty body"))); err != nil {
-			slog.Error("failed to render", logger.AttrError(err))
-		}
-		return
-	}
-
 	var body model.LoginJSONRequestBody
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		if err := render.Render(w, r, httputil.NewFailureRender(errors.Wrap(err, "failed to decode body"))); err != nil {
+
+	if err := httputil.ParseBody(r, &body); err != nil {
+		if err := render.Render(w, r, httputil.NewFailureRender(errors.Wrap(err, "failed to parse body"))); err != nil {
 			slog.Error("failed to render", logger.AttrError(err))
 		}
 		return
@@ -48,7 +41,7 @@ func (a api) Login(w http.ResponseWriter, r *http.Request) {
 	// login business logic
 	params, err := internal.NewParams(body)
 	if err != nil {
-		if err := render.Render(w, r, httputil.NewFailureRender(errors.Wrap(err, "failed to create body"))); err != nil {
+		if err := render.Render(w, r, httputil.NewFailureRender(errors.Wrap(err, "failed to create params"))); err != nil {
 			slog.Error("failed to render", logger.AttrError(err))
 		}
 		return
@@ -62,15 +55,6 @@ func (a api) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.SetCookie(w, setCookie("accessToken", resp.AccessToken))
-	http.SetCookie(w, setCookie("refreshToken", resp.RefreshToken))
-}
-
-func setCookie(key, value string) *http.Cookie {
-	return &http.Cookie{
-		Name:     key,
-		Value:    value,
-		Secure:   true,
-		HttpOnly: true,
-	}
+	http.SetCookie(w, httputil.SetCookie("accessToken", resp.AccessToken))
+	http.SetCookie(w, httputil.SetCookie("refreshToken", resp.RefreshToken))
 }

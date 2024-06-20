@@ -40,7 +40,7 @@ func TestLogin(t *testing.T) {
 
 	{ // login success
 		repoMock := repomock.NewUserAccountMock()
-		repoMock.GetUserAccountByUserNameFunc = func() (*pgmodel.UserAccount, error) {
+		repoMock.GetActiveUserAccountByNameFunc = func() (*pgmodel.UserAccount, error) {
 			return &pgmodel.UserAccount{
 				ID: "user-id",
 			}, nil
@@ -78,7 +78,7 @@ func TestLogin(t *testing.T) {
 	}
 	{ // login failed, failed get user
 		repoMock := repomock.NewUserAccountMock()
-		repoMock.GetUserAccountByUserNameFunc = func() (*pgmodel.UserAccount, error) {
+		repoMock.GetActiveUserAccountByNameFunc = func() (*pgmodel.UserAccount, error) {
 			return nil, errors.New("failed get user")
 		}
 
@@ -113,7 +113,7 @@ func TestLogin(t *testing.T) {
 	}
 	{ // login failed, failed get user
 		repoMock := repomock.NewUserAccountMock()
-		repoMock.GetUserAccountByUserNameFunc = func() (*pgmodel.UserAccount, error) {
+		repoMock.GetActiveUserAccountByNameFunc = func() (*pgmodel.UserAccount, error) {
 			return nil, nil
 		}
 
@@ -148,7 +148,7 @@ func TestLogin(t *testing.T) {
 	}
 	{ // login failed, wrong password
 		repoMock := repomock.NewUserAccountMock()
-		repoMock.GetUserAccountByUserNameFunc = func() (*pgmodel.UserAccount, error) {
+		repoMock.GetActiveUserAccountByNameFunc = func() (*pgmodel.UserAccount, error) {
 			return &pgmodel.UserAccount{
 				ID: "user-id",
 			}, nil
@@ -185,7 +185,7 @@ func TestLogin(t *testing.T) {
 	}
 	{ // login failed, check password error
 		repoMock := repomock.NewUserAccountMock()
-		repoMock.GetUserAccountByUserNameFunc = func() (*pgmodel.UserAccount, error) {
+		repoMock.GetActiveUserAccountByNameFunc = func() (*pgmodel.UserAccount, error) {
 			return &pgmodel.UserAccount{
 				ID: "user-id",
 			}, nil
@@ -222,7 +222,7 @@ func TestLogin(t *testing.T) {
 	}
 	{ // login failed, create token failed
 		repoMock := repomock.NewUserAccountMock()
-		repoMock.GetUserAccountByUserNameFunc = func() (*pgmodel.UserAccount, error) {
+		repoMock.GetActiveUserAccountByNameFunc = func() (*pgmodel.UserAccount, error) {
 			return &pgmodel.UserAccount{
 				ID: "user-id",
 			}, nil
@@ -259,7 +259,7 @@ func TestLogin(t *testing.T) {
 
 	{ // login failed, request body wrong
 		repoMock := repomock.NewUserAccountMock()
-		repoMock.GetUserAccountByUserNameFunc = func() (*pgmodel.UserAccount, error) {
+		repoMock.GetActiveUserAccountByNameFunc = func() (*pgmodel.UserAccount, error) {
 			return &pgmodel.UserAccount{
 				ID: "user-id",
 			}, nil
