@@ -15,6 +15,15 @@ type HealthResponse struct {
 	Message *string `json:"message,omitempty"`
 }
 
+// LoginRequest login request body
+type LoginRequest struct {
+	// Password password
+	Password string `json:"password"`
+
+	// UserName email
+	UserName string `json:"userName"`
+}
+
 // RegisterRequest register request body
 type RegisterRequest struct {
 	// Password password
@@ -23,6 +32,9 @@ type RegisterRequest struct {
 	// UserName email
 	UserName string `json:"userName"`
 }
+
+// LoginJSONRequestBody defines body for Login for application/json ContentType.
+type LoginJSONRequestBody = LoginRequest
 
 // RegisterJSONRequestBody defines body for Register for application/json ContentType.
 type RegisterJSONRequestBody = RegisterRequest
