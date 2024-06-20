@@ -1,4 +1,4 @@
-package useraccount
+package useraccountrepo
 
 import (
 	"fmt"

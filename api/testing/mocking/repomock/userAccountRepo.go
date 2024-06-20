@@ -3,13 +3,11 @@ package repomock
 import (
 	"context"
 	"mysite/models/pgmodel"
-	"mysite/repositories/useraccount"
 
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type mockService struct {
-	useraccount.UserAccountRepo
 	GetUserAccountByUserNameFunc func() (*pgmodel.UserAccount, error)
 	ActiveUserFunc               func() error
 	InsertFunc                   func() error

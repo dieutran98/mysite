@@ -7,7 +7,7 @@ import (
 	"mysite/pkgs/auth"
 	"mysite/pkgs/database"
 	"mysite/pkgs/validate"
-	useraccount "mysite/repositories/useraccount"
+	"mysite/repositories/useraccountrepo"
 	"mysite/utils/httputil"
 
 	"github.com/mitchellh/mapstructure"
@@ -16,7 +16,7 @@ import (
 )
 
 type service struct {
-	repo    useraccount.UserAccountRepo
+	repo    useraccountrepo.UserAccountRepo
 	authSvc auth.AuthService
 	req     RegisterRequest
 }
@@ -32,7 +32,7 @@ type RegisterRequest struct {
 
 func NewService(req RegisterRequest) service {
 	return service{
-		repo:    useraccount.NewRepo(),
+		repo:    useraccountrepo.NewRepo(),
 		authSvc: auth.NewAuthService(),
 		req:     req,
 	}
