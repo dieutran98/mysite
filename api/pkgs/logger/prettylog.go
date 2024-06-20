@@ -93,9 +93,6 @@ func (p *prettyHandler) Handle(ctx context.Context, record slog.Record) error {
 		record.AddAttrs(p.attrs...)
 	}
 
-	buf.WriteString(p.printTime(record.Time))
-	buf.WriteString(printLevel(record.Level))
-
 	attrStr, err := p.printAttributes(ctx, record)
 	if err != nil {
 		fmt.Println(err)
@@ -157,7 +154,7 @@ func (p *prettyHandler) clone() prettyHandler {
 }
 
 func printLevel(level slog.Level) string {
-	return printFont(fontByLevel(level), fmt.Sprintf("%8s", level.String()+"  "))
+	return level.String()
 }
 
 func fontByLevel(level slog.Level) Font {
@@ -180,7 +177,7 @@ func (p prettyHandler) printTime(t time.Time) string {
 	if p.option.TimeFormat == "" {
 		timeFormat = time.DateTime
 	}
-	return printFont(BrightWhite, t.Format(timeFormat)+"  ")
+	return t.Format(timeFormat)
 }
 
 func printFont(font Font, src string) string {
@@ -193,7 +190,11 @@ func (p *prettyHandler) printAttributes(ctx context.Context, record slog.Record)
 		Level: p.option.Level.Level(),
 		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
 			switch a.Key {
-			case "time", "level", "function":
+			case "time":
+				return slog.String(a.Key, p.printTime(record.Time))
+			case "level":
+				return slog.String(a.Key, printLevel(record.Level))
+			case "function":
 				return slog.Attr{}
 			default:
 				return a
