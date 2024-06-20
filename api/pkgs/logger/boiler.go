@@ -59,4 +59,6 @@ func (bl *boilerLogger) log() {
 		slog.String("query", bl.Query),
 		slog.String("args", bl.Args),
 	)
+	// reset counter
+	bl.writeCount = 0
 }
