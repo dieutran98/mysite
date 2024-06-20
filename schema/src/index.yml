@@ -21,6 +21,9 @@ paths:
   /login:
     post:
       $ref: ./features/login/post.yml
+  /refresh:
+    post:
+      $ref: ./features/refresh/post.yml
   
 components:
   schemas:
@@ -32,3 +35,5 @@ components:
       $ref: ./features/register/RegisterRequest.yml
     LoginRequest:
       $ref: ./features/login/LoginRequest.yml
+    RefreshRequest:
+      $ref: ./features/refresh/RefreshRequest.yml
