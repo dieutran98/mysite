@@ -29,6 +29,9 @@ func SetupDatabase() error {
 }
 
 func Close() error {
+	if internalDB.db == nil {
+		return nil
+	}
 	return internalDB.db.Close()
 }
 

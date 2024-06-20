@@ -2,6 +2,7 @@ package env
 
 import (
 	"log/slog"
+	"mysite/pkgs/logger"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/mitchellh/mapstructure"
@@ -56,9 +57,13 @@ func (v viperConfig) mappingStruct() error {
 
 func (v viperConfig) onConfigChangeFunc(e fsnotify.Event) {
 	slog.Info("env changed.", "fileName", e.Name)
-	v.viperCfg.ReadInConfig()
+	if err := v.viperCfg.ReadInConfig(); err != nil {
+		slog.Error("failed to ReadInConfig: ", logger.AttrError(err))
+		return
+	}
 	if err := v.mappingStruct(); err != nil {
-		slog.Error("failed to unMarshal env: ", "error", err.Error())
+		slog.Error("failed to unMarshal env: ", logger.AttrError(err))
+		return
 	}
 }
 

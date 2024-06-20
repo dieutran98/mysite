@@ -7,8 +7,9 @@ import (
 )
 
 func TestHashPassword(t *testing.T) {
+	svc := auth{}
 	{ // hash success
-		hash, err := HashPassword("secret")
+		hash, err := svc.HashPassword("secret")
 		assert.NoError(t, err)
 		assert.NotEmpty(t, hash)
 	}
@@ -16,22 +17,23 @@ func TestHashPassword(t *testing.T) {
 }
 
 func TestComparePasswordAndHash(t *testing.T) {
+	svc := auth{}
 	{ // ComparePasswordAndHash success
-		hash, err := HashPassword("secret")
+		hash, err := svc.HashPassword("secret")
 		assert.NoError(t, err)
 		assert.NotEmpty(t, hash)
 
-		match, err := ComparePasswordAndHash("secret", hash)
+		match, err := svc.ComparePasswordAndHash("secret", hash)
 		assert.NoError(t, err)
 		assert.True(t, match)
 	}
 
 	{ // ComparePasswordAndHash failed
-		hash, err := HashPassword("secret")
+		hash, err := svc.HashPassword("secret")
 		assert.NoError(t, err)
 		assert.NotEmpty(t, hash)
 
-		match, err := ComparePasswordAndHash("secret1", hash)
+		match, err := svc.ComparePasswordAndHash("secret1", hash)
 		assert.NoError(t, err)
 		assert.False(t, match)
 	}

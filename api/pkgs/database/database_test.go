@@ -2,23 +2,27 @@ package database
 
 import (
 	"fmt"
-	"mysite/testing/database"
+	"log/slog"
+	"mysite/pkgs/logger"
+	"mysite/testing/dbtest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMain(m *testing.M) {
-	pool, resource, err := database.SetupDatabaseForTesting()
+	pool, resource, err := dbtest.SetupDatabaseForTesting()
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
 
 	defer func() {
-		Close()
-		if err := database.PurgeResource(pool, resource); err != nil {
-			fmt.Println("failed to purge resource")
+		if err := Close(); err != nil {
+			slog.Error("failed to close database", logger.AttrError(err))
+		}
+		if err := dbtest.PurgeResource(pool, resource); err != nil {
+			slog.Error("failed to purge resource", logger.AttrError(err))
 		}
 	}()
 	m.Run()

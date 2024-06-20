@@ -40,27 +40,19 @@ func NewBoilerTransaction(ctx context.Context, fn ExecuteQueriesFunc) error {
 	defer func() {
 		if r := recover(); r != nil {
 			slog.Error("panic occur in transaction", slog.Any("panic", r))
-			tx.Rollback()
+			rollback(tx)
 		}
 	}()
 
 	// execute queries
 	if err := fn(ctx, tx); err != nil {
-		if err := tx.Rollback(); err != nil {
-			slog.Error("rollback error", logger.AttrError(errors.Wrap(err, "failed rollback")))
-		} else {
-			slog.Debug("rollback!")
-		}
+		rollback(tx)
 		return errors.Wrap(err, "failed to execute queries")
 	}
 
 	// rollback if running as test
 	if checkIsRunAsTest(ctx) {
-		if err := tx.Rollback(); err != nil {
-			slog.Error("rollback error", logger.AttrError(errors.Wrap(err, "failed rollback")))
-		} else {
-			slog.Debug("rollback!")
-		}
+		rollback(tx)
 		return nil
 	}
 
@@ -69,6 +61,14 @@ func NewBoilerTransaction(ctx context.Context, fn ExecuteQueriesFunc) error {
 	}
 
 	return nil
+}
+
+func rollback(tx boil.ContextTransactor) {
+	if err := tx.Rollback(); err != nil {
+		slog.Error("rollback error", logger.AttrError(errors.Wrap(err, "failed rollback")))
+	} else {
+		slog.Debug("rollback!")
+	}
 }
 
 func checkIsRunAsTest(ctx context.Context) bool {

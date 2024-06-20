@@ -30,7 +30,7 @@ var (
 	}
 )
 
-func HashPassword(password string) (string, error) {
+func (a auth) HashPassword(password string) (string, error) {
 	salt, err := generateRandomBytes(defaultParams.saltLength)
 	if err != nil {
 		return "", errors.Wrap(err, "failed to generate salt")
@@ -48,7 +48,7 @@ func HashPassword(password string) (string, error) {
 	return encodedHash, nil
 }
 
-func ComparePasswordAndHash(password, encodedHash string) (match bool, err error) {
+func (a auth) ComparePasswordAndHash(password, encodedHash string) (match bool, err error) {
 	// Extract the parameters, salt and derived key from the encoded password
 	// hash.
 	p, salt, hash, err := decodeHash(encodedHash)
