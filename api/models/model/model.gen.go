@@ -24,6 +24,12 @@ type LoginRequest struct {
 	UserName string `json:"userName"`
 }
 
+// RefreshRequest refresh token request body
+type RefreshRequest struct {
+	// RefreshToken refresh token
+	RefreshToken string `json:"refreshToken"`
+}
+
 // RegisterRequest register request body
 type RegisterRequest struct {
 	// Password password
@@ -35,6 +41,9 @@ type RegisterRequest struct {
 
 // LoginJSONRequestBody defines body for Login for application/json ContentType.
 type LoginJSONRequestBody = LoginRequest
+
+// RefreshJSONRequestBody defines body for Refresh for application/json ContentType.
+type RefreshJSONRequestBody = RefreshRequest
 
 // RegisterJSONRequestBody defines body for Register for application/json ContentType.
 type RegisterJSONRequestBody = RegisterRequest
