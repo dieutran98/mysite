@@ -18,6 +18,9 @@ paths:
   /register:
     post:
       $ref: ./features/register/post.yml
+  /login:
+    post:
+      $ref: ./features/login/post.yml
   
 components:
   schemas:
@@ -27,3 +30,5 @@ components:
       $ref: ./features/common/ErrorResponse.yml
     RegisterRequest:
       $ref: ./features/register/RegisterRequest.yml
+    LoginRequest:
+      $ref: ./features/login/LoginRequest.yml
