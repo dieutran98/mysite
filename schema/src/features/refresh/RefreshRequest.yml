@@ -1,0 +1,9 @@
+type: object
+description: refresh token request body
+properties:
+  refreshToken:
+    type: string
+    description: refresh token
+required:
+  - refreshToken
+  

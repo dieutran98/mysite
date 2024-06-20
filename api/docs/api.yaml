@@ -79,6 +79,33 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /refresh:
+    post:
+      operationId: refresh
+      summary: refresh token api
+      description: refresh token api
+      tags:
+        - refresh
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: return cookies with keys -'accessToken'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 components:
   schemas:
     HealthResponse:
@@ -123,3 +150,12 @@ components:
       required:
         - userName
         - password
+    RefreshRequest:
+      type: object
+      description: refresh token request body
+      properties:
+        refreshToken:
+          type: string
+          description: refresh token
+      required:
+        - refreshToken

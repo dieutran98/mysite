@@ -1,0 +1,25 @@
+operationId: refresh
+summary: refresh token api
+description: refresh token api
+tags:
+  - refresh
+requestBody:
+  content:
+    application/json:
+      schema:
+        $ref: ../../index.yml#/components/schemas/RefreshRequest
+responses:
+  200:
+    description: return cookies with keys -'accessToken'
+  400:
+    description: Bad request
+    content:
+      application/json:
+        schema:
+          $ref: ../../index.yml#/components/schemas/ErrorResponse
+  500:
+    description: Internal error
+    content:
+      application/json:
+        schema:
+          $ref: ../../index.yml#/components/schemas/ErrorResponse
