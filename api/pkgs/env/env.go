@@ -6,6 +6,7 @@ import (
 
 type AppEnv struct {
 	Database database `json:"database"`
+	Jwt      jwt      `json:"jwt"`
 }
 
 type database struct {
@@ -19,6 +20,11 @@ type database struct {
 	ConnMaxLifeIdle    int    `json:"connMaxLifeIdle"`
 	ConnMaxOpen        int    `json:"connMaxOpen"`
 	TransactionTimeout int    `json:"transactionTimeout"`
+}
+
+type jwt struct {
+	AccessKey  string `json:"accessKey"`
+	RefreshKey string `json:"refreshKey"`
 }
 
 type configure interface {

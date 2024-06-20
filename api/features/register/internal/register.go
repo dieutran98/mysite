@@ -7,7 +7,7 @@ import (
 	"mysite/pkgs/auth"
 	"mysite/pkgs/database"
 	"mysite/pkgs/validate"
-	useraccount "mysite/repositories/useraccount"
+	"mysite/repositories/useraccountrepo"
 	"mysite/utils/httputil"
 
 	"github.com/mitchellh/mapstructure"
@@ -16,8 +16,9 @@ import (
 )
 
 type service struct {
-	repo useraccount.UserAccountRepo
-	req  RegisterRequest
+	repo    useraccountrepo.UserAccountRepo
+	authSvc auth.AuthService
+	req     RegisterRequest
 }
 
 type RegisterRequest struct {
@@ -31,8 +32,9 @@ type RegisterRequest struct {
 
 func NewService(req RegisterRequest) service {
 	return service{
-		repo: useraccount.New(),
-		req:  req,
+		repo:    useraccountrepo.NewRepo(),
+		authSvc: auth.NewAuthService(),
+		req:     req,
 	}
 }
 
@@ -43,7 +45,7 @@ func (s service) Register(ctx context.Context) error {
 	}
 
 	// hash password
-	hash, err := auth.HashPassword(s.req.Password)
+	hash, err := s.authSvc.HashPassword(s.req.Password)
 	if err != nil {
 		return errors.Wrap(err, "failed to hash password")
 	}

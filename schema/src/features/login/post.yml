@@ -1,0 +1,25 @@
+operationId: login
+summary: login
+description: login
+tags:
+  - login
+requestBody:
+  content:
+    application/json:
+      schema:
+        $ref: ../../index.yml#/components/schemas/LoginRequest
+responses:
+  200:
+    description: return cookies with keys -'accessToken', 'refreshToken'
+  400:
+    description: Bad request
+    content:
+      application/json:
+        schema:
+          $ref: ../../index.yml#/components/schemas/ErrorResponse
+  500:
+    description: Internal error
+    content:
+      application/json:
+        schema:
+          $ref: ../../index.yml#/components/schemas/ErrorResponse

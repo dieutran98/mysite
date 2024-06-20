@@ -1,0 +1,13 @@
+type: object
+description: login request body
+properties:
+  userName:
+    type: string
+    description: email
+  password:
+    type: string
+    description: password
+required:
+  - userName
+  - password
+  

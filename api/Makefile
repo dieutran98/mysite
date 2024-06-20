@@ -60,3 +60,8 @@ pgmodelgen:
 	@echo "Start pgmodel..."
 	PSQL_DBNAME=${POSTGRES_DB} PSQL_HOST=${POSTGRES_HOSTNAME} PSQL_USER=${POSTGRES_USER} PSQL_PASS=${POSTGRES_PASSWORD} PSQL_SSLMODE=${POSTGRES_SSL_MODE} sqlboiler psql --no-tests --wipe -o $(WORK_DIR)/models/pgmodel -p pgmodel
 	@echo "Success dbmodelgen! Check it out $(WORK_DIR)/models/pgmodel/*.go"
+
+lint:
+	golangci-lint run ./...
+test:
+	go test ./...

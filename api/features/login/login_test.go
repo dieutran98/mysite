@@ -1,15 +1,16 @@
-package register
+package login
 
 import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"mysite/features/register/internal"
+	"mysite/features/login/internal"
 	"mysite/models/model"
 	"mysite/utils/httputil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"slices"
 	"testing"
 
 	"github.com/go-chi/chi/v5"
@@ -19,11 +20,11 @@ import (
 )
 
 type mockService struct {
-	RegisterFunc func() error
+	LoginFunc func() (*internal.LoginResponse, error)
 }
 
-func (m mockService) Register(ctx context.Context) error {
-	return m.RegisterFunc()
+func (m mockService) Login(ctx context.Context) (*internal.LoginResponse, error) {
+	return m.LoginFunc()
 }
 
 func newTestRouter() *chi.Mux {
@@ -42,7 +43,7 @@ func TestDashboardGetStores(t *testing.T) {
 		name       string
 		req        func(context.Context) (*http.Request, error)
 		assert     func(*httptest.ResponseRecorder, *http.Request)
-		newService func(req internal.RegisterRequest) service
+		newService func(req internal.LoginRequest) service
 	}{
 		{
 			name: "404",
@@ -56,7 +57,7 @@ func TestDashboardGetStores(t *testing.T) {
 		{
 			name: "400 - Invalid request",
 			req: func(ctx context.Context) (*http.Request, error) {
-				_url, err := url.Parse("http://example.com/api/v1/register")
+				_url, err := url.Parse("http://example.com/api/v1/login")
 				require.NoError(t, err)
 				var buf bytes.Buffer
 				if err := json.NewEncoder(&buf).Encode(model.RegisterRequest{Password: "secret", UserName: "test@gmail.com"}); err != nil {
@@ -68,14 +69,14 @@ func TestDashboardGetStores(t *testing.T) {
 			assert: func(w *httptest.ResponseRecorder, r *http.Request) {
 				assert.Equal(t, http.StatusBadRequest, w.Result().StatusCode)
 			},
-			newService: func(req internal.RegisterRequest) service {
-				return mockService{RegisterFunc: func() error { return httputil.ErrInvalidRequest }}
+			newService: func(req internal.LoginRequest) service {
+				return mockService{LoginFunc: func() (*internal.LoginResponse, error) { return nil, httputil.ErrInvalidRequest }}
 			},
 		},
 		{
 			name: "400 - Invalid request, empty body",
 			req: func(ctx context.Context) (*http.Request, error) {
-				_url, err := url.Parse("http://example.com/api/v1/register")
+				_url, err := url.Parse("http://example.com/api/v1/login")
 				require.NoError(t, err)
 
 				return http.NewRequest(http.MethodPost, _url.String(), nil)
@@ -83,14 +84,14 @@ func TestDashboardGetStores(t *testing.T) {
 			assert: func(w *httptest.ResponseRecorder, r *http.Request) {
 				assert.Equal(t, http.StatusBadRequest, w.Result().StatusCode)
 			},
-			newService: func(req internal.RegisterRequest) service {
-				return mockService{RegisterFunc: func() error { return nil }}
+			newService: func(req internal.LoginRequest) service {
+				return mockService{LoginFunc: func() (*internal.LoginResponse, error) { return nil, nil }}
 			},
 		},
 		{
 			name: "500 - internal error request",
 			req: func(ctx context.Context) (*http.Request, error) {
-				_url, err := url.Parse("http://example.com/api/v1/register")
+				_url, err := url.Parse("http://example.com/api/v1/login")
 				require.NoError(t, err)
 				var buf bytes.Buffer
 				if err := json.NewEncoder(&buf).Encode(model.RegisterRequest{Password: "secret", UserName: "test@gmail.com"}); err != nil {
@@ -102,14 +103,14 @@ func TestDashboardGetStores(t *testing.T) {
 			assert: func(w *httptest.ResponseRecorder, r *http.Request) {
 				assert.Equal(t, http.StatusInternalServerError, w.Result().StatusCode)
 			},
-			newService: func(req internal.RegisterRequest) service {
-				return mockService{RegisterFunc: func() error { return httputil.ErrInternal }}
+			newService: func(req internal.LoginRequest) service {
+				return mockService{LoginFunc: func() (*internal.LoginResponse, error) { return nil, httputil.ErrInternal }}
 			},
 		},
 		{
-			name: "201 - internal error request",
+			name: "200 - success",
 			req: func(ctx context.Context) (*http.Request, error) {
-				_url, err := url.Parse("http://example.com/api/v1/register")
+				_url, err := url.Parse("http://example.com/api/v1/login")
 				require.NoError(t, err)
 				var buf bytes.Buffer
 				if err := json.NewEncoder(&buf).Encode(model.RegisterRequest{Password: "secret", UserName: "test@gmail.com"}); err != nil {
@@ -119,10 +120,27 @@ func TestDashboardGetStores(t *testing.T) {
 				return http.NewRequest(http.MethodPost, _url.String(), &buf)
 			},
 			assert: func(w *httptest.ResponseRecorder, r *http.Request) {
-				assert.Equal(t, http.StatusCreated, w.Result().StatusCode)
+				assert.Equal(t, http.StatusOK, w.Result().StatusCode)
+
+				cookies := w.Result().Cookies()
+
+				checkList := []string{"accessToken", "refreshToken"}
+				found := slices.ContainsFunc(cookies, func(c *http.Cookie) bool {
+					if c.Value != "token" {
+						return false
+					}
+					return slices.Contains(checkList, c.Name)
+				})
+				require.True(t, found)
+
 			},
-			newService: func(req internal.RegisterRequest) service {
-				return mockService{RegisterFunc: func() error { return nil }}
+			newService: func(req internal.LoginRequest) service {
+				return mockService{LoginFunc: func() (*internal.LoginResponse, error) {
+					return &internal.LoginResponse{
+						AccessToken:  "token",
+						RefreshToken: "token",
+					}, nil
+				}}
 			},
 		},
 	}
