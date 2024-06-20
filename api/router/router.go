@@ -3,6 +3,7 @@ package router
 import (
 	"mysite/features/health"
 	"mysite/features/login"
+	"mysite/features/refresh"
 	"mysite/features/register"
 
 	"github.com/go-chi/chi/v5"
@@ -33,5 +34,6 @@ func publicApi(r chi.Router) {
 	r.Group(func(r chi.Router) {
 		register.HandlerFromMux(register.NewHandler(), r)
 		login.HandlerFromMux(login.NewHandler(), r)
+		refresh.HandlerFromMux(refresh.NewHandler(), r)
 	})
 }

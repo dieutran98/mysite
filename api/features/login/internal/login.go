@@ -66,7 +66,7 @@ func (s service) Login(ctx context.Context) (*LoginResponse, error) {
 	// get password from db by userName
 	if err := database.NewBoilerTransaction(ctx, func(ctx context.Context, tx boil.ContextTransactor) error {
 		var err error
-		user, err = s.repo.GetUserAccountByUserName(ctx, tx, s.req.UserName)
+		user, err = s.repo.GetActiveUserAccountByName(ctx, tx, s.req.UserName)
 		if err != nil {
 			return errors.Wrap(httputil.ErrUnauthorize, "login failed at step 1")
 		}

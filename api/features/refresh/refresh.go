@@ -1,9 +1,9 @@
-package login
+package refresh
 
 import (
 	"context"
 	"log/slog"
-	"mysite/features/login/internal"
+	"mysite/features/refresh/internal"
 	"mysite/models/model"
 	"mysite/pkgs/logger"
 	"mysite/utils/httputil"
@@ -17,10 +17,10 @@ type api struct {
 }
 
 type service interface {
-	Login(ctx context.Context) (*internal.LoginResponse, error)
+	RefreshToken(ctx context.Context) (*internal.RefreshResponse, error)
 }
 
-var newService = func(req internal.LoginRequest) service {
+var newService = func(req internal.RefreshRequest) service {
 	return internal.NewService(req)
 }
 
@@ -28,9 +28,8 @@ func NewHandler() *api {
 	return &api{}
 }
 
-func (a api) Login(w http.ResponseWriter, r *http.Request) {
-	var body model.LoginJSONRequestBody
-
+func (a api) Refresh(w http.ResponseWriter, r *http.Request) {
+	var body model.RefreshJSONRequestBody
 	if err := httputil.ParseBody(r, &body); err != nil {
 		if err := render.Render(w, r, httputil.NewFailureRender(errors.Wrap(err, "failed to parse body"))); err != nil {
 			slog.Error("failed to render", logger.AttrError(err))
@@ -38,23 +37,22 @@ func (a api) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// login business logic
+	// refresh business
 	params, err := internal.NewParams(body)
 	if err != nil {
-		if err := render.Render(w, r, httputil.NewFailureRender(errors.Wrap(err, "failed to create params"))); err != nil {
+		if err := render.Render(w, r, httputil.NewFailureRender(errors.Wrap(err, "failed to parse params"))); err != nil {
 			slog.Error("failed to render", logger.AttrError(err))
 		}
 		return
 	}
 
-	resp, err := newService(*params).Login(r.Context())
+	resp, err := newService(*params).RefreshToken(r.Context())
 	if err != nil {
-		if err := render.Render(w, r, httputil.NewFailureRender(errors.Wrap(err, "failed to create body"))); err != nil {
+		if err := render.Render(w, r, httputil.NewFailureRender(errors.Wrap(err, "failed to refresh token"))); err != nil {
 			slog.Error("failed to render", logger.AttrError(err))
 		}
 		return
 	}
 
 	http.SetCookie(w, httputil.SetCookie("accessToken", resp.AccessToken))
-	http.SetCookie(w, httputil.SetCookie("refreshToken", resp.RefreshToken))
 }

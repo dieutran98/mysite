@@ -2,7 +2,6 @@ package register
 
 import (
 	"context"
-	"encoding/json"
 	"log/slog"
 	"net/http"
 
@@ -30,16 +29,9 @@ func NewHandler() *api {
 }
 
 func (a *api) Register(w http.ResponseWriter, r *http.Request) {
-	if r.Body == nil || r.Body == http.NoBody {
-		if err := render.Render(w, r, httputil.NewFailureRender(errors.Wrap(httputil.ErrInvalidRequest, "empty body"))); err != nil {
-			slog.Error("failed to render", logger.AttrError(err))
-		}
-		return
-	}
-
 	var body model.RegisterRequest
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		if err := render.Render(w, r, httputil.NewFailureRender(errors.Wrap(err, "failed to decode body"))); err != nil {
+	if err := httputil.ParseBody(r, &body); err != nil {
+		if err := render.Render(w, r, httputil.NewFailureRender(errors.Wrap(err, "failed to parse body"))); err != nil {
 			slog.Error("failed to render", logger.AttrError(err))
 		}
 		return
