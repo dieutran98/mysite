@@ -2,14 +2,14 @@ package database
 
 import (
 	"fmt"
-	"mysite/testing/database"
+	"mysite/testing/dbtest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMain(m *testing.M) {
-	pool, resource, err := database.SetupDatabaseForTesting()
+	pool, resource, err := dbtest.SetupDatabaseForTesting()
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -17,7 +17,7 @@ func TestMain(m *testing.M) {
 
 	defer func() {
 		Close()
-		if err := database.PurgeResource(pool, resource); err != nil {
+		if err := dbtest.PurgeResource(pool, resource); err != nil {
 			fmt.Println("failed to purge resource")
 		}
 	}()

@@ -3,7 +3,7 @@ package useraccount
 import (
 	"fmt"
 	"mysite/pkgs/database"
-	databasetesting "mysite/testing/database"
+	databasetesting "mysite/testing/dbtest"
 	"testing"
 )
 

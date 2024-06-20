@@ -31,6 +31,6 @@ type UserAccountRepo interface {
 type userAccountRepo struct {
 }
 
-func New() UserAccountRepo {
+func NewRepo() UserAccountRepo {
 	return &userAccountRepo{}
 }

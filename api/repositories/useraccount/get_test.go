@@ -4,7 +4,7 @@ import (
 	"context"
 	"mysite/models/pgmodel"
 	"mysite/pkgs/database"
-	dbtest "mysite/testing/database"
+	dbtest "mysite/testing/dbtest"
 	"testing"
 
 	"github.com/friendsofgo/errors"
@@ -26,7 +26,7 @@ func generateTestData(ctx context.Context, tx boil.ContextTransactor) error {
 func TestGetUserAccountByUserName(t *testing.T) {
 	t.Parallel()
 	require.NoError(t, database.SetupDatabase())
-	repo := New()
+	repo := NewRepo()
 	ctx := dbtest.SetTestTransactionCtx(context.Background())
 
 	{ // found user

@@ -27,4 +27,11 @@ var (
 			StatusText: ptrconv.String("Internal error"),
 		},
 	}
+
+	ErrUnauthorize = ErrResponse{
+		HTTPStatusCode: http.StatusUnauthorized,
+		ErrorResponse: model.ErrorResponse{
+			StatusText: ptrconv.String("Unauthorize error"),
+		},
+	}
 )
