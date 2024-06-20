@@ -2,6 +2,8 @@ package database
 
 import (
 	"fmt"
+	"log/slog"
+	"mysite/pkgs/logger"
 	"mysite/testing/dbtest"
 	"testing"
 
@@ -16,9 +18,11 @@ func TestMain(m *testing.M) {
 	}
 
 	defer func() {
-		Close()
+		if err := Close(); err != nil {
+			slog.Error("failed to close database", logger.AttrError(err))
+		}
 		if err := dbtest.PurgeResource(pool, resource); err != nil {
-			fmt.Println("failed to purge resource")
+			slog.Error("failed to purge resource", logger.AttrError(err))
 		}
 	}()
 	m.Run()

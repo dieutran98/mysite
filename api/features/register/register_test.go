@@ -19,7 +19,6 @@ import (
 )
 
 type mockService struct {
-	service
 	RegisterFunc func() error
 }
 
