@@ -22,7 +22,7 @@ func (u userAccountRepo) GetUserAccountByUserName(ctx context.Context, tx boil.C
 	return pgUserAccount, nil
 }
 
-func (u userAccountRepo) GetActiveUserAccountById(ctx context.Context, tx boil.ContextTransactor, userId string) (*pgmodel.UserAccount, error) {
+func (u userAccountRepo) GetActiveUserAccountById(ctx context.Context, tx boil.ContextTransactor, userId int) (*pgmodel.UserAccount, error) {
 	mods := []qm.QueryMod{
 		pgmodel.UserAccountWhere.ID.EQ(userId),
 		pgmodel.UserAccountWhere.IsActive.EQ(true),

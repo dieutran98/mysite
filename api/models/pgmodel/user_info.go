@@ -24,12 +24,13 @@ import (
 
 // UserInfo is an object representing the database table.
 type UserInfo struct {
-	ID            string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserAccountID string      `boil:"user_account_id" json:"user_account_id" toml:"user_account_id" yaml:"user_account_id"`
-	Name          string      `boil:"name" json:"name" toml:"name" yaml:"name"`
+	ID            int         `boil:"id" json:"id" toml:"id" yaml:"id"`
+	UserAccountID int         `boil:"user_account_id" json:"user_account_id" toml:"user_account_id" yaml:"user_account_id"`
+	Name          null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
 	Phone         null.String `boil:"phone" json:"phone,omitempty" toml:"phone" yaml:"phone,omitempty"`
-	Address       null.String `boil:"address" json:"address,omitempty" toml:"address" yaml:"address,omitempty"`
+	Email         null.String `boil:"email" json:"email,omitempty" toml:"email" yaml:"email,omitempty"`
 	Gender        null.String `boil:"gender" json:"gender,omitempty" toml:"gender" yaml:"gender,omitempty"`
+	MembershipID  null.Int    `boil:"membership_id" json:"membership_id,omitempty" toml:"membership_id" yaml:"membership_id,omitempty"`
 	IsDeleted     bool        `boil:"is_deleted" json:"is_deleted" toml:"is_deleted" yaml:"is_deleted"`
 	CreatedAt     time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	UpdatedAt     null.Time   `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
@@ -44,8 +45,9 @@ var UserInfoColumns = struct {
 	UserAccountID string
 	Name          string
 	Phone         string
-	Address       string
+	Email         string
 	Gender        string
+	MembershipID  string
 	IsDeleted     string
 	CreatedAt     string
 	UpdatedAt     string
@@ -55,8 +57,9 @@ var UserInfoColumns = struct {
 	UserAccountID: "user_account_id",
 	Name:          "name",
 	Phone:         "phone",
-	Address:       "address",
+	Email:         "email",
 	Gender:        "gender",
+	MembershipID:  "membership_id",
 	IsDeleted:     "is_deleted",
 	CreatedAt:     "created_at",
 	UpdatedAt:     "updated_at",
@@ -68,8 +71,9 @@ var UserInfoTableColumns = struct {
 	UserAccountID string
 	Name          string
 	Phone         string
-	Address       string
+	Email         string
 	Gender        string
+	MembershipID  string
 	IsDeleted     string
 	CreatedAt     string
 	UpdatedAt     string
@@ -79,8 +83,9 @@ var UserInfoTableColumns = struct {
 	UserAccountID: "user_info.user_account_id",
 	Name:          "user_info.name",
 	Phone:         "user_info.phone",
-	Address:       "user_info.address",
+	Email:         "user_info.email",
 	Gender:        "user_info.gender",
+	MembershipID:  "user_info.membership_id",
 	IsDeleted:     "user_info.is_deleted",
 	CreatedAt:     "user_info.created_at",
 	UpdatedAt:     "user_info.updated_at",
@@ -139,24 +144,64 @@ func (w whereHelpernull_String) NIN(slice []string) qm.QueryMod {
 func (w whereHelpernull_String) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
 func (w whereHelpernull_String) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
 
+type whereHelpernull_Int struct{ field string }
+
+func (w whereHelpernull_Int) EQ(x null.Int) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, false, x)
+}
+func (w whereHelpernull_Int) NEQ(x null.Int) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, true, x)
+}
+func (w whereHelpernull_Int) LT(x null.Int) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpernull_Int) LTE(x null.Int) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpernull_Int) GT(x null.Int) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpernull_Int) GTE(x null.Int) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+func (w whereHelpernull_Int) IN(slice []int) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
+}
+func (w whereHelpernull_Int) NIN(slice []int) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
+}
+
+func (w whereHelpernull_Int) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpernull_Int) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+
 var UserInfoWhere = struct {
-	ID            whereHelperstring
-	UserAccountID whereHelperstring
-	Name          whereHelperstring
+	ID            whereHelperint
+	UserAccountID whereHelperint
+	Name          whereHelpernull_String
 	Phone         whereHelpernull_String
-	Address       whereHelpernull_String
+	Email         whereHelpernull_String
 	Gender        whereHelpernull_String
+	MembershipID  whereHelpernull_Int
 	IsDeleted     whereHelperbool
 	CreatedAt     whereHelpertime_Time
 	UpdatedAt     whereHelpernull_Time
 	DeletedAt     whereHelpernull_Time
 }{
-	ID:            whereHelperstring{field: "\"user_info\".\"id\""},
-	UserAccountID: whereHelperstring{field: "\"user_info\".\"user_account_id\""},
-	Name:          whereHelperstring{field: "\"user_info\".\"name\""},
+	ID:            whereHelperint{field: "\"user_info\".\"id\""},
+	UserAccountID: whereHelperint{field: "\"user_info\".\"user_account_id\""},
+	Name:          whereHelpernull_String{field: "\"user_info\".\"name\""},
 	Phone:         whereHelpernull_String{field: "\"user_info\".\"phone\""},
-	Address:       whereHelpernull_String{field: "\"user_info\".\"address\""},
+	Email:         whereHelpernull_String{field: "\"user_info\".\"email\""},
 	Gender:        whereHelpernull_String{field: "\"user_info\".\"gender\""},
+	MembershipID:  whereHelpernull_Int{field: "\"user_info\".\"membership_id\""},
 	IsDeleted:     whereHelperbool{field: "\"user_info\".\"is_deleted\""},
 	CreatedAt:     whereHelpertime_Time{field: "\"user_info\".\"created_at\""},
 	UpdatedAt:     whereHelpernull_Time{field: "\"user_info\".\"updated_at\""},
@@ -191,9 +236,9 @@ func (r *userInfoR) GetUserAccount() *UserAccount {
 type userInfoL struct{}
 
 var (
-	userInfoAllColumns            = []string{"id", "user_account_id", "name", "phone", "address", "gender", "is_deleted", "created_at", "updated_at", "deleted_at"}
-	userInfoColumnsWithoutDefault = []string{"user_account_id", "name"}
-	userInfoColumnsWithDefault    = []string{"id", "phone", "address", "gender", "is_deleted", "created_at", "updated_at", "deleted_at"}
+	userInfoAllColumns            = []string{"id", "user_account_id", "name", "phone", "email", "gender", "membership_id", "is_deleted", "created_at", "updated_at", "deleted_at"}
+	userInfoColumnsWithoutDefault = []string{"user_account_id"}
+	userInfoColumnsWithDefault    = []string{"id", "name", "phone", "email", "gender", "membership_id", "is_deleted", "created_at", "updated_at", "deleted_at"}
 	userInfoPrimaryKeyColumns     = []string{"id"}
 	userInfoGeneratedColumns      = []string{}
 )
@@ -694,7 +739,7 @@ func UserInfos(mods ...qm.QueryMod) userInfoQuery {
 
 // FindUserInfo retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindUserInfo(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*UserInfo, error) {
+func FindUserInfo(ctx context.Context, exec boil.ContextExecutor, iD int, selectCols ...string) (*UserInfo, error) {
 	userInfoObj := &UserInfo{}
 
 	sel := "*"
@@ -1223,7 +1268,7 @@ func (o *UserInfoSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor
 }
 
 // UserInfoExists checks if the UserInfo row exists.
-func UserInfoExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func UserInfoExists(ctx context.Context, exec boil.ContextExecutor, iD int) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"user_info\" where \"id\"=$1 limit 1)"
 

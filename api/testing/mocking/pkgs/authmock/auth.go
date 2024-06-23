@@ -26,7 +26,7 @@ func (m authMock) ComparePasswordAndHash(password, encodedHash string) (match bo
 	return m.ComparePasswordAndHashFunc()
 }
 
-func (m authMock) NewClaims(userId string, expiredTime time.Time) auth.Claims {
+func (m authMock) NewClaims(userId int, expiredTime time.Time) auth.Claims {
 	return m.NewClaimsFunc()
 }
 

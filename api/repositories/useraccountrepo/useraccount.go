@@ -9,7 +9,7 @@ import (
 
 type Get interface {
 	GetUserAccountByUserName(ctx context.Context, tx boil.ContextTransactor, userName string) (*pgmodel.UserAccount, error)
-	GetActiveUserAccountById(ctx context.Context, tx boil.ContextTransactor, userId string) (*pgmodel.UserAccount, error)
+	GetActiveUserAccountById(ctx context.Context, tx boil.ContextTransactor, userId int) (*pgmodel.UserAccount, error)
 	GetActiveUserAccountByName(ctx context.Context, tx boil.ContextTransactor, userName string) (*pgmodel.UserAccount, error)
 }
 
