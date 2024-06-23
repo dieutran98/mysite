@@ -41,13 +41,17 @@ func TestRefreshToken(t *testing.T) {
 		repoMock := repomock.NewUserAccountMock()
 		repoMock.GetActiveUserAccountByIdFunc = func() (*pgmodel.UserAccount, error) {
 			return &pgmodel.UserAccount{
-				ID: "user-id",
+				ID: 1,
 			}, nil
 		}
 
 		authMock := authmock.NewMockService()
 		authMock.ParseTokenFunc = func() (*auth.Claims, error) {
-			return &auth.Claims{}, nil
+			return &auth.Claims{
+				RegisteredClaims: jwt.RegisteredClaims{
+					Subject: "1",
+				},
+			}, nil
 		}
 		authMock.CreateTokenFunc = func() (string, error) {
 			return "token", nil
@@ -55,7 +59,7 @@ func TestRefreshToken(t *testing.T) {
 		authMock.NewClaimsFunc = func() auth.Claims {
 			return auth.Claims{
 				RegisteredClaims: jwt.RegisteredClaims{
-					Subject: "user-id",
+					Subject: "1",
 				},
 			}
 		}
@@ -88,7 +92,7 @@ func TestRefreshToken(t *testing.T) {
 		repoMock := repomock.NewUserAccountMock()
 		repoMock.GetActiveUserAccountByIdFunc = func() (*pgmodel.UserAccount, error) {
 			return &pgmodel.UserAccount{
-				ID: "user-id",
+				ID: 1,
 			}, nil
 		}
 
@@ -127,7 +131,11 @@ func TestRefreshToken(t *testing.T) {
 
 		authMock := authmock.NewMockService()
 		authMock.ParseTokenFunc = func() (*auth.Claims, error) {
-			return &auth.Claims{}, nil
+			return &auth.Claims{
+				RegisteredClaims: jwt.RegisteredClaims{
+					Subject: "1",
+				},
+			}, nil
 		}
 		authMock.CreateTokenFunc = func() (string, error) {
 			return "token", nil
@@ -156,13 +164,17 @@ func TestRefreshToken(t *testing.T) {
 		repoMock := repomock.NewUserAccountMock()
 		repoMock.GetActiveUserAccountByIdFunc = func() (*pgmodel.UserAccount, error) {
 			return &pgmodel.UserAccount{
-				ID: "user-id",
+				ID: 1,
 			}, nil
 		}
 
 		authMock := authmock.NewMockService()
 		authMock.ParseTokenFunc = func() (*auth.Claims, error) {
-			return &auth.Claims{}, nil
+			return &auth.Claims{
+				RegisteredClaims: jwt.RegisteredClaims{
+					Subject: "1",
+				},
+			}, nil
 		}
 		authMock.CreateTokenFunc = func() (string, error) {
 			return "", errors.New("create token failed")
@@ -170,7 +182,7 @@ func TestRefreshToken(t *testing.T) {
 		authMock.NewClaimsFunc = func() auth.Claims {
 			return auth.Claims{
 				RegisteredClaims: jwt.RegisteredClaims{
-					Subject: "user-id",
+					Subject: "1",
 				},
 			}
 		}

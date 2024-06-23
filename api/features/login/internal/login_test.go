@@ -42,7 +42,7 @@ func TestLogin(t *testing.T) {
 		repoMock := repomock.NewUserAccountMock()
 		repoMock.GetActiveUserAccountByNameFunc = func() (*pgmodel.UserAccount, error) {
 			return &pgmodel.UserAccount{
-				ID: "user-id",
+				ID: 1,
 			}, nil
 		}
 
@@ -150,7 +150,7 @@ func TestLogin(t *testing.T) {
 		repoMock := repomock.NewUserAccountMock()
 		repoMock.GetActiveUserAccountByNameFunc = func() (*pgmodel.UserAccount, error) {
 			return &pgmodel.UserAccount{
-				ID: "user-id",
+				ID: 1,
 			}, nil
 		}
 
@@ -187,7 +187,7 @@ func TestLogin(t *testing.T) {
 		repoMock := repomock.NewUserAccountMock()
 		repoMock.GetActiveUserAccountByNameFunc = func() (*pgmodel.UserAccount, error) {
 			return &pgmodel.UserAccount{
-				ID: "user-id",
+				ID: 1,
 			}, nil
 		}
 
@@ -224,7 +224,7 @@ func TestLogin(t *testing.T) {
 		repoMock := repomock.NewUserAccountMock()
 		repoMock.GetActiveUserAccountByNameFunc = func() (*pgmodel.UserAccount, error) {
 			return &pgmodel.UserAccount{
-				ID: "user-id",
+				ID: 1,
 			}, nil
 		}
 
@@ -261,7 +261,7 @@ func TestLogin(t *testing.T) {
 		repoMock := repomock.NewUserAccountMock()
 		repoMock.GetActiveUserAccountByNameFunc = func() (*pgmodel.UserAccount, error) {
 			return &pgmodel.UserAccount{
-				ID: "user-id",
+				ID: 1,
 			}, nil
 		}
 

@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -11,13 +13,13 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func (auth) NewClaims(userId string, expiredTime time.Time) Claims {
+func (auth) NewClaims(userId int, expiredTime time.Time) Claims {
 	return Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expiredTime),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			NotBefore: jwt.NewNumericDate(time.Now()),
-			Subject:   userId,
+			Subject:   fmt.Sprintf("%d", userId),
 		},
 	}
 }
@@ -42,4 +44,12 @@ func (auth) ParseToken(tokenStr string, signingKey []byte) (*Claims, error) {
 	}
 
 	return claims, nil
+}
+
+func (c Claims) GetUserId() (int, error) {
+	id, err := strconv.Atoi(c.Subject)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to convert string to int")
+	}
+	return id, nil
 }
