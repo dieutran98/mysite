@@ -31,7 +31,7 @@ func (m mockService) GetActiveUserAccountByName(ctx context.Context, tx boil.Con
 	return m.GetActiveUserAccountByNameFunc()
 }
 
-func (m mockService) Insert(ctx context.Context, tx boil.ContextTransactor, user pgmodel.UserAccount) error {
+func (m mockService) Insert(ctx context.Context, tx boil.ContextTransactor, user *pgmodel.UserAccount) error {
 	return m.InsertFunc()
 }
 

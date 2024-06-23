@@ -14,7 +14,7 @@ type Get interface {
 }
 
 type Insert interface {
-	Insert(ctx context.Context, tx boil.ContextTransactor, user pgmodel.UserAccount) error
+	Insert(ctx context.Context, tx boil.ContextTransactor, user *pgmodel.UserAccount) error
 }
 
 type Update interface {

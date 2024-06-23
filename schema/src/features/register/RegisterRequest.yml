@@ -7,6 +7,18 @@ properties:
   password:
     type: string
     description: password
+  name:
+    type: string
+    description: name of user
+  phone:
+    type: string
+    description: phone number of user
+  email:
+    type: string
+    description: email of user
+  gender:
+    type: string
+    description: enum of [male, female, other]
 required:
   - userName
   - password

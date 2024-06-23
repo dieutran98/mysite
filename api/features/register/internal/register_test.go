@@ -8,9 +8,11 @@ import (
 	"mysite/models/model"
 	"mysite/models/pgmodel"
 	"mysite/pkgs/database"
+	"mysite/repositories/useraccountrepo"
 	"mysite/testing/dbtest"
 	"mysite/testing/mocking/pkgs/authmock"
 	"mysite/testing/mocking/repomock"
+	"mysite/utils/ptrconv"
 
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
@@ -61,18 +63,15 @@ func TestRegister(t *testing.T) {
 		require.NoError(t, svc.Register(ctx))
 	}
 	{ // register success, create user
-		userAccountMock := repomock.NewUserAccountMock()
-		userAccountMock.ActiveUserFunc = func() error { return nil }
-		userAccountMock.InsertFunc = func() error { return nil }
-		userAccountMock.GetUserAccountByUserNameFunc = func() (*pgmodel.UserAccount, error) { return nil, nil }
 
 		authMock := authmock.NewMockService()
 		authMock.HashPasswordFunc = func() (string, error) { return "token", nil }
 		svc := service{
-			repo: userAccountMock,
+			repo: useraccountrepo.NewRepo(),
 			req: RegisterRequest{
 				Password: "secret",
 				UserName: "test@gamil.com",
+				Name:     ptrconv.String("testing"),
 			},
 			authSvc: authMock,
 		}
