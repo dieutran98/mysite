@@ -24,7 +24,7 @@ import (
 
 // UserAccount is an object representing the database table.
 type UserAccount struct {
-	ID        string    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	ID        int       `boil:"id" json:"id" toml:"id" yaml:"id"`
 	UserName  string    `boil:"user_name" json:"user_name" toml:"user_name" yaml:"user_name"`
 	Password  string    `boil:"password" json:"password" toml:"password" yaml:"password"`
 	IsActive  bool      `boil:"is_active" json:"is_active" toml:"is_active" yaml:"is_active"`
@@ -78,6 +78,29 @@ var UserAccountTableColumns = struct {
 }
 
 // Generated where
+
+type whereHelperint struct{ field string }
+
+func (w whereHelperint) EQ(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
+func (w whereHelperint) NEQ(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
+func (w whereHelperint) LT(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
+func (w whereHelperint) LTE(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
+func (w whereHelperint) GT(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
+func (w whereHelperint) GTE(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
+func (w whereHelperint) IN(slice []int) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
+}
+func (w whereHelperint) NIN(slice []int) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
+}
 
 type whereHelperstring struct{ field string }
 
@@ -161,7 +184,7 @@ func (w whereHelpernull_Time) IsNull() qm.QueryMod    { return qmhelper.WhereIsN
 func (w whereHelpernull_Time) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
 
 var UserAccountWhere = struct {
-	ID        whereHelperstring
+	ID        whereHelperint
 	UserName  whereHelperstring
 	Password  whereHelperstring
 	IsActive  whereHelperbool
@@ -170,7 +193,7 @@ var UserAccountWhere = struct {
 	UpdatedAt whereHelpernull_Time
 	DeletedAt whereHelpernull_Time
 }{
-	ID:        whereHelperstring{field: "\"user_account\".\"id\""},
+	ID:        whereHelperint{field: "\"user_account\".\"id\""},
 	UserName:  whereHelperstring{field: "\"user_account\".\"user_name\""},
 	Password:  whereHelperstring{field: "\"user_account\".\"password\""},
 	IsActive:  whereHelperbool{field: "\"user_account\".\"is_active\""},
@@ -713,7 +736,7 @@ func UserAccounts(mods ...qm.QueryMod) userAccountQuery {
 
 // FindUserAccount retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindUserAccount(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*UserAccount, error) {
+func FindUserAccount(ctx context.Context, exec boil.ContextExecutor, iD int, selectCols ...string) (*UserAccount, error) {
 	userAccountObj := &UserAccount{}
 
 	sel := "*"
@@ -1242,7 +1265,7 @@ func (o *UserAccountSlice) ReloadAll(ctx context.Context, exec boil.ContextExecu
 }
 
 // UserAccountExists checks if the UserAccount row exists.
-func UserAccountExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func UserAccountExists(ctx context.Context, exec boil.ContextExecutor, iD int) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"user_account\" where \"id\"=$1 limit 1)"
 

@@ -144,7 +144,7 @@ func TestGetActiveUserAccountById(t *testing.T) {
 		err := database.NewBoilerTransaction(context.Background(), func(ctx context.Context, tx boil.ContextTransactor) error {
 
 			var err error
-			userAccount, err = repo.GetActiveUserAccountById(ctx, tx, "userName1")
+			userAccount, err = repo.GetActiveUserAccountById(ctx, tx, 99)
 			if err != nil {
 				return errors.Wrap(err, "failed get userAccount")
 			}

@@ -23,7 +23,7 @@ func (m mockService) GetUserAccountByUserName(ctx context.Context, tx boil.Conte
 	return m.GetUserAccountByUserNameFunc()
 }
 
-func (m mockService) GetActiveUserAccountById(ctx context.Context, tx boil.ContextTransactor, userName string) (*pgmodel.UserAccount, error) {
+func (m mockService) GetActiveUserAccountById(ctx context.Context, tx boil.ContextTransactor, userId int) (*pgmodel.UserAccount, error) {
 	return m.GetActiveUserAccountByIdFunc()
 }
 
@@ -31,7 +31,7 @@ func (m mockService) GetActiveUserAccountByName(ctx context.Context, tx boil.Con
 	return m.GetActiveUserAccountByNameFunc()
 }
 
-func (m mockService) Insert(ctx context.Context, tx boil.ContextTransactor, user pgmodel.UserAccount) error {
+func (m mockService) Insert(ctx context.Context, tx boil.ContextTransactor, user *pgmodel.UserAccount) error {
 	return m.InsertFunc()
 }
 

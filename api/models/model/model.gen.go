@@ -32,8 +32,20 @@ type RefreshRequest struct {
 
 // RegisterRequest register request body
 type RegisterRequest struct {
+	// Email email of user
+	Email *string `json:"email,omitempty"`
+
+	// Gender enum of [male, female, other]
+	Gender *string `json:"gender,omitempty"`
+
+	// Name name of user
+	Name *string `json:"name,omitempty"`
+
 	// Password password
 	Password string `json:"password"`
+
+	// Phone phone number of user
+	Phone *string `json:"phone,omitempty"`
 
 	// UserName email
 	UserName string `json:"userName"`

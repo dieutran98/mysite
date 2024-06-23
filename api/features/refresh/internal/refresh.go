@@ -60,12 +60,16 @@ func (s service) RefreshToken(ctx context.Context) (*RefreshResponse, error) {
 	if err != nil {
 		return nil, errors.Wrapf(httputil.ErrUnauthorize, "failed to parse token: %s", err.Error())
 	}
+	userId, err := claims.GetUserId()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get user Id")
+	}
 
 	var pgUserAccount *pgmodel.UserAccount
 	// get user by user id
 	if err := database.NewBoilerTransaction(ctx, func(ctx context.Context, tx boil.ContextTransactor) error {
 		var err error
-		pgUserAccount, err = s.repo.GetActiveUserAccountById(ctx, tx, claims.Subject)
+		pgUserAccount, err = s.repo.GetActiveUserAccountById(ctx, tx, userId)
 		if err != nil {
 			return errors.Wrap(err, "failed get userAccount")
 		}
