@@ -28,7 +28,7 @@ func TestActiveUser(t *testing.T) {
 
 		var result *pgmodel.UserAccount
 		err := database.NewBoilerTransaction(ctx, func(ctx context.Context, tx boil.ContextTransactor) error {
-			if err := repo.Insert(ctx, tx, userAccount); err != nil {
+			if err := repo.Insert(ctx, tx, &userAccount); err != nil {
 				return errors.Wrap(err, "failed insert userAccount")
 			}
 

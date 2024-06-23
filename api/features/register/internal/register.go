@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"mysite/constants"
 	"mysite/models/model"
 	"mysite/models/pgmodel"
 	"mysite/pkgs/auth"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
+	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
@@ -28,6 +30,18 @@ type RegisterRequest struct {
 
 	// UserName email
 	UserName string `validate:"email,required"`
+
+	// Email email of user
+	Email *string `json:"email,omitempty" validate:"omitempty,email"`
+
+	// gender of user
+	Gender *string `json:"gender,omitempty" validate:"omitempty,oneof=male female other"`
+
+	// Name name of user
+	Name *string `json:"name,omitempty"`
+
+	// Phone phone number of user
+	Phone *string `json:"phone,omitempty" validate:"omitempty,number"`
 }
 
 func NewService(req RegisterRequest) service {
@@ -100,9 +114,28 @@ func (s service) registerUser(ctx context.Context, tx boil.ContextTransactor) er
 		IsActive:  true,
 		IsDeleted: false,
 	}
-	if err := s.repo.Insert(ctx, tx, *user); err != nil {
+	if err := s.repo.Insert(ctx, tx, user); err != nil {
 		return errors.Wrap(err, "failed to insert user")
 	}
 
+	if !s.req.hasUserInfo() {
+		return nil
+	}
+
+	userInfo := pgmodel.UserInfo{
+		Name:          null.StringFromPtr(s.req.Name),
+		Phone:         null.StringFromPtr(s.req.Phone),
+		Email:         null.StringFromPtr(s.req.Email),
+		Gender:        null.StringFromPtr(s.req.Gender),
+		MembershipID:  null.IntFrom(constants.Bronze),
+		UserAccountID: user.ID,
+	}
+	if err := user.AddUserInfos(ctx, tx, true, &userInfo); err != nil {
+		return errors.Wrap(err, "failed to save userInfo")
+	}
+
 	return nil
+}
+func (req RegisterRequest) hasUserInfo() bool {
+	return req.Email != nil || req.Gender != nil || req.Phone != nil || req.Name != nil
 }
