@@ -23,6 +23,7 @@ type Update interface {
 
 type Delete interface{}
 
+//go:generate moq -pkg repomock -out ../../testing/mocking/repomock/useraccountmock.go . UserAccountRepo
 type UserAccountRepo interface {
 	Get
 	Insert

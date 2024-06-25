@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 
@@ -10,12 +11,12 @@ import (
 	"mysite/pkgs/database"
 	"mysite/repositories/useraccountrepo"
 	"mysite/testing/dbtest"
-	"mysite/testing/mocking/pkgs/authmock"
+	"mysite/testing/mocking/pkgmock"
 	"mysite/testing/mocking/repomock"
 	"mysite/utils/ptrconv"
 
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 func TestMain(m *testing.M) {
@@ -45,13 +46,15 @@ func TestRegister(t *testing.T) {
 	ctx := dbtest.SetTestTransactionCtx(context.Background())
 
 	{ // register success, active user
-		userAccountMock := repomock.NewUserAccountMock()
-		userAccountMock.ActiveUserFunc = func() error { return nil }
-		userAccountMock.InsertFunc = func() error { return nil }
-		userAccountMock.GetUserAccountByUserNameFunc = func() (*pgmodel.UserAccount, error) { return &pgmodel.UserAccount{IsActive: false}, nil }
+		userAccountMock := &repomock.UserAccountRepoMock{}
+		userAccountMock.GetUserAccountByUserNameFunc = func(ctx context.Context, tx boil.ContextTransactor, userName string) (*pgmodel.UserAccount, error) {
+			return &pgmodel.UserAccount{IsActive: false}, nil
+		}
+		userAccountMock.ActiveUserFunc = func(ctx context.Context, tx boil.ContextTransactor, pgUser pgmodel.UserAccount) error { return nil }
+		userAccountMock.InsertFunc = func(ctx context.Context, tx boil.ContextTransactor, user *pgmodel.UserAccount) error { return nil }
 
-		authMock := authmock.NewMockService()
-		authMock.HashPasswordFunc = func() (string, error) { return "token", nil }
+		authMock := &pkgmock.AuthServiceMock{}
+		authMock.HashPasswordFunc = func(password string) (string, error) { return "token", nil }
 		svc := service{
 			repo: userAccountMock,
 			req: RegisterRequest{
@@ -62,10 +65,11 @@ func TestRegister(t *testing.T) {
 		}
 		require.NoError(t, svc.Register(ctx))
 	}
+
 	{ // register success, create user
 
-		authMock := authmock.NewMockService()
-		authMock.HashPasswordFunc = func() (string, error) { return "token", nil }
+		authMock := &pkgmock.AuthServiceMock{}
+		authMock.HashPasswordFunc = func(password string) (string, error) { return "token", nil }
 		svc := service{
 			repo: useraccountrepo.NewRepo(),
 			req: RegisterRequest{
@@ -79,13 +83,16 @@ func TestRegister(t *testing.T) {
 	}
 
 	{ // register failed, active user failed
-		userAccountMock := repomock.NewUserAccountMock()
-		userAccountMock.ActiveUserFunc = func() error { return errors.New("active user failed") }
-		userAccountMock.InsertFunc = func() error { return nil }
-		userAccountMock.GetUserAccountByUserNameFunc = func() (*pgmodel.UserAccount, error) { return &pgmodel.UserAccount{IsActive: false}, nil }
+		userAccountMock := &repomock.UserAccountRepoMock{}
+		userAccountMock.ActiveUserFunc = func(ctx context.Context, tx boil.ContextTransactor, pgUser pgmodel.UserAccount) error {
+			return errors.New("failed active user")
+		}
+		userAccountMock.GetUserAccountByUserNameFunc = func(ctx context.Context, tx boil.ContextTransactor, userName string) (*pgmodel.UserAccount, error) {
+			return &pgmodel.UserAccount{IsActive: false}, nil
+		}
 
-		authMock := authmock.NewMockService()
-		authMock.HashPasswordFunc = func() (string, error) { return "token", nil }
+		authMock := &pkgmock.AuthServiceMock{}
+		authMock.HashPasswordFunc = func(password string) (string, error) { return "token", nil }
 		svc := service{
 			repo: userAccountMock,
 			req: RegisterRequest{
@@ -98,13 +105,17 @@ func TestRegister(t *testing.T) {
 	}
 
 	{ // register failed, create user failed
-		userAccountMock := repomock.NewUserAccountMock()
-		userAccountMock.ActiveUserFunc = func() error { return nil }
-		userAccountMock.InsertFunc = func() error { return errors.New("insert error failed") }
-		userAccountMock.GetUserAccountByUserNameFunc = func() (*pgmodel.UserAccount, error) { return nil, nil }
+		userAccountMock := &repomock.UserAccountRepoMock{}
+		userAccountMock.ActiveUserFunc = func(ctx context.Context, tx boil.ContextTransactor, pgUser pgmodel.UserAccount) error { return nil }
+		userAccountMock.InsertFunc = func(ctx context.Context, tx boil.ContextTransactor, user *pgmodel.UserAccount) error {
+			return errors.New("Insert error failed")
+		}
+		userAccountMock.GetUserAccountByUserNameFunc = func(ctx context.Context, tx boil.ContextTransactor, userName string) (*pgmodel.UserAccount, error) {
+			return nil, nil
+		}
 
-		authMock := authmock.NewMockService()
-		authMock.HashPasswordFunc = func() (string, error) { return "token", nil }
+		authMock := &pkgmock.AuthServiceMock{}
+		authMock.HashPasswordFunc = func(password string) (string, error) { return "token", nil }
 		svc := service{
 			repo: userAccountMock,
 			req: RegisterRequest{
@@ -117,15 +128,13 @@ func TestRegister(t *testing.T) {
 	}
 
 	{ // register failed, user exist
-		userAccountMock := repomock.NewUserAccountMock()
-		userAccountMock.ActiveUserFunc = func() error { return nil }
-		userAccountMock.InsertFunc = func() error { return nil }
-		userAccountMock.GetUserAccountByUserNameFunc = func() (*pgmodel.UserAccount, error) {
+		userAccountMock := &repomock.UserAccountRepoMock{}
+		userAccountMock.GetUserAccountByUserNameFunc = func(ctx context.Context, tx boil.ContextTransactor, userName string) (*pgmodel.UserAccount, error) {
 			return &pgmodel.UserAccount{IsActive: true, IsDeleted: false}, nil
 		}
 
-		authMock := authmock.NewMockService()
-		authMock.HashPasswordFunc = func() (string, error) { return "token", nil }
+		authMock := &pkgmock.AuthServiceMock{}
+		authMock.HashPasswordFunc = func(password string) (string, error) { return "token", nil }
 		svc := service{
 			repo: userAccountMock,
 			req: RegisterRequest{
@@ -136,16 +145,15 @@ func TestRegister(t *testing.T) {
 		}
 		require.Error(t, svc.Register(ctx))
 	}
+
 	{ // register failed, get user failed
-		userAccountMock := repomock.NewUserAccountMock()
-		userAccountMock.ActiveUserFunc = func() error { return nil }
-		userAccountMock.InsertFunc = func() error { return nil }
-		userAccountMock.GetUserAccountByUserNameFunc = func() (*pgmodel.UserAccount, error) {
-			return nil, errors.New("failed get user")
+		userAccountMock := &repomock.UserAccountRepoMock{}
+		userAccountMock.GetUserAccountByUserNameFunc = func(ctx context.Context, tx boil.ContextTransactor, userName string) (*pgmodel.UserAccount, error) {
+			return nil, errors.New("get user account failed")
 		}
 
-		authMock := authmock.NewMockService()
-		authMock.HashPasswordFunc = func() (string, error) { return "token", nil }
+		authMock := &pkgmock.AuthServiceMock{}
+		authMock.HashPasswordFunc = func(password string) (string, error) { return "token", nil }
 		svc := service{
 			repo: userAccountMock,
 			req: RegisterRequest{
@@ -158,15 +166,15 @@ func TestRegister(t *testing.T) {
 	}
 
 	{ // register failed, validate failed
-		userAccountMock := repomock.NewUserAccountMock()
-		userAccountMock.ActiveUserFunc = func() error { return nil }
-		userAccountMock.InsertFunc = func() error { return nil }
-		userAccountMock.GetUserAccountByUserNameFunc = func() (*pgmodel.UserAccount, error) {
-			return nil, errors.New("failed get user")
+		userAccountMock := &repomock.UserAccountRepoMock{}
+		userAccountMock.ActiveUserFunc = func(ctx context.Context, tx boil.ContextTransactor, pgUser pgmodel.UserAccount) error { return nil }
+		userAccountMock.InsertFunc = func(ctx context.Context, tx boil.ContextTransactor, user *pgmodel.UserAccount) error { return nil }
+		userAccountMock.GetUserAccountByUserNameFunc = func(ctx context.Context, tx boil.ContextTransactor, userName string) (*pgmodel.UserAccount, error) {
+			return &pgmodel.UserAccount{IsActive: true, IsDeleted: false}, nil
 		}
 
-		authMock := authmock.NewMockService()
-		authMock.HashPasswordFunc = func() (string, error) { return "token", nil }
+		authMock := &pkgmock.AuthServiceMock{}
+		authMock.HashPasswordFunc = func(password string) (string, error) { return "token", nil }
 		svc := service{
 			repo: userAccountMock,
 			req: RegisterRequest{
