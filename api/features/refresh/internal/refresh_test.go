@@ -8,13 +8,15 @@ import (
 	"mysite/pkgs/auth"
 	"mysite/pkgs/database"
 	"mysite/testing/dbtest"
-	"mysite/testing/mocking/pkgs/authmock"
+	"mysite/testing/mocking/pkgmock"
 	"mysite/testing/mocking/repomock"
 	"testing"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 func TestMain(m *testing.M) {
@@ -38,25 +40,23 @@ func TestRefreshToken(t *testing.T) {
 	ctx := dbtest.SetTestTransactionCtx(context.Background())
 
 	{ // refresh success
-		repoMock := repomock.NewUserAccountMock()
-		repoMock.GetActiveUserAccountByIdFunc = func() (*pgmodel.UserAccount, error) {
+		repoMock := &repomock.UserAccountRepoMock{}
+		repoMock.GetActiveUserAccountByIdFunc = func(ctx context.Context, tx boil.ContextTransactor, userId int) (*pgmodel.UserAccount, error) {
 			return &pgmodel.UserAccount{
 				ID: 1,
 			}, nil
 		}
 
-		authMock := authmock.NewMockService()
-		authMock.ParseTokenFunc = func() (*auth.Claims, error) {
+		authMock := &pkgmock.AuthServiceMock{}
+		authMock.ParseTokenFunc = func(tokenStr string, signingKey []byte) (*auth.Claims, error) {
 			return &auth.Claims{
 				RegisteredClaims: jwt.RegisteredClaims{
 					Subject: "1",
 				},
 			}, nil
 		}
-		authMock.CreateTokenFunc = func() (string, error) {
-			return "token", nil
-		}
-		authMock.NewClaimsFunc = func() auth.Claims {
+		authMock.CreateTokenFunc = func(claims auth.Claims, signingKey []byte) (string, error) { return "token", nil }
+		authMock.NewClaimsFunc = func(userId int, expiredTime time.Time) auth.Claims {
 			return auth.Claims{
 				RegisteredClaims: jwt.RegisteredClaims{
 					Subject: "1",
@@ -89,21 +89,19 @@ func TestRefreshToken(t *testing.T) {
 		require.Nil(t, resp)
 	}
 	{ // refresh failed, parse token failed
-		repoMock := repomock.NewUserAccountMock()
-		repoMock.GetActiveUserAccountByIdFunc = func() (*pgmodel.UserAccount, error) {
+		repoMock := &repomock.UserAccountRepoMock{}
+		repoMock.GetActiveUserAccountByIdFunc = func(ctx context.Context, tx boil.ContextTransactor, userId int) (*pgmodel.UserAccount, error) {
 			return &pgmodel.UserAccount{
 				ID: 1,
 			}, nil
 		}
 
-		authMock := authmock.NewMockService()
-		authMock.ParseTokenFunc = func() (*auth.Claims, error) {
+		authMock := &pkgmock.AuthServiceMock{}
+		authMock.ParseTokenFunc = func(tokenStr string, signingKey []byte) (*auth.Claims, error) {
 			return nil, errors.New("parse token failed")
 		}
-		authMock.CreateTokenFunc = func() (string, error) {
-			return "token", nil
-		}
-		authMock.NewClaimsFunc = func() auth.Claims {
+		authMock.CreateTokenFunc = func(claims auth.Claims, signingKey []byte) (string, error) { return "token", nil }
+		authMock.NewClaimsFunc = func(userId int, expiredTime time.Time) auth.Claims {
 			return auth.Claims{
 				RegisteredClaims: jwt.RegisteredClaims{
 					Subject: "user-id",
@@ -124,23 +122,22 @@ func TestRefreshToken(t *testing.T) {
 		require.Nil(t, resp)
 	}
 	{ // refresh failed, get user failed
-		repoMock := repomock.NewUserAccountMock()
-		repoMock.GetActiveUserAccountByIdFunc = func() (*pgmodel.UserAccount, error) {
+		repoMock := &repomock.UserAccountRepoMock{}
+		repoMock.GetActiveUserAccountByIdFunc = func(ctx context.Context, tx boil.ContextTransactor, userId int) (*pgmodel.UserAccount, error) {
 			return nil, errors.New("get user account failed")
 		}
-
-		authMock := authmock.NewMockService()
-		authMock.ParseTokenFunc = func() (*auth.Claims, error) {
+		authMock := &pkgmock.AuthServiceMock{}
+		authMock.ParseTokenFunc = func(tokenStr string, signingKey []byte) (*auth.Claims, error) {
 			return &auth.Claims{
 				RegisteredClaims: jwt.RegisteredClaims{
 					Subject: "1",
 				},
 			}, nil
 		}
-		authMock.CreateTokenFunc = func() (string, error) {
+		authMock.CreateTokenFunc = func(claims auth.Claims, signingKey []byte) (string, error) {
 			return "token", nil
 		}
-		authMock.NewClaimsFunc = func() auth.Claims {
+		authMock.NewClaimsFunc = func(userId int, expiredTime time.Time) auth.Claims {
 			return auth.Claims{
 				RegisteredClaims: jwt.RegisteredClaims{
 					Subject: "user-id",
@@ -161,25 +158,24 @@ func TestRefreshToken(t *testing.T) {
 		require.Nil(t, resp)
 	}
 	{ // refresh failed, createToken failed
-		repoMock := repomock.NewUserAccountMock()
-		repoMock.GetActiveUserAccountByIdFunc = func() (*pgmodel.UserAccount, error) {
+		repoMock := &repomock.UserAccountRepoMock{}
+		repoMock.GetActiveUserAccountByIdFunc = func(ctx context.Context, tx boil.ContextTransactor, userId int) (*pgmodel.UserAccount, error) {
 			return &pgmodel.UserAccount{
 				ID: 1,
 			}, nil
 		}
-
-		authMock := authmock.NewMockService()
-		authMock.ParseTokenFunc = func() (*auth.Claims, error) {
+		authMock := &pkgmock.AuthServiceMock{}
+		authMock.ParseTokenFunc = func(tokenStr string, signingKey []byte) (*auth.Claims, error) {
 			return &auth.Claims{
 				RegisteredClaims: jwt.RegisteredClaims{
 					Subject: "1",
 				},
 			}, nil
 		}
-		authMock.CreateTokenFunc = func() (string, error) {
+		authMock.CreateTokenFunc = func(claims auth.Claims, signingKey []byte) (string, error) {
 			return "", errors.New("create token failed")
 		}
-		authMock.NewClaimsFunc = func() auth.Claims {
+		authMock.NewClaimsFunc = func(userId int, expiredTime time.Time) auth.Claims {
 			return auth.Claims{
 				RegisteredClaims: jwt.RegisteredClaims{
 					Subject: "1",
