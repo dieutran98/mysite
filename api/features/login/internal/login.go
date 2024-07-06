@@ -79,6 +79,9 @@ func (s service) Login(ctx context.Context) (*LoginResponse, error) {
 	}); err != nil {
 		return nil, err
 	}
+	if user == nil {
+		return nil, errors.New("user not found")
+	}
 
 	// check password hash
 	match, err := s.authSvc.ComparePasswordAndHash(s.req.Password, user.Password)
