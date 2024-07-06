@@ -5,8 +5,8 @@ import (
 
 	"github.com/go-chi/render"
 
+	"mysite/dtos"
 	"mysite/features/health/internal"
-	"mysite/models/model"
 )
 
 type api struct {
@@ -14,7 +14,7 @@ type api struct {
 }
 
 type service interface {
-	HealthCheck() model.HealthResponse
+	HealthCheck() dtos.HealthResponse
 }
 
 func NewHandler() *api {

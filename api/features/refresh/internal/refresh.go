@@ -2,8 +2,8 @@ package internal
 
 import (
 	"context"
-	"mysite/models/model"
-	"mysite/models/pgmodel"
+	"mysite/dtos"
+	"mysite/entities"
 	"mysite/pkgs/auth"
 	"mysite/pkgs/database"
 	"mysite/pkgs/env"
@@ -40,7 +40,7 @@ func NewService(req RefreshRequest) service {
 	}
 }
 
-func NewParams(req model.RefreshJSONRequestBody) (*RefreshRequest, error) {
+func NewParams(req dtos.RefreshJSONRequestBody) (*RefreshRequest, error) {
 	var result RefreshRequest
 	if err := mapstructure.Decode(req, &result); err != nil {
 		return nil, errors.Wrap(err, "failed decode")
@@ -65,7 +65,7 @@ func (s service) RefreshToken(ctx context.Context) (*RefreshResponse, error) {
 		return nil, errors.Wrap(err, "failed to get user Id")
 	}
 
-	var pgUserAccount *pgmodel.UserAccount
+	var pgUserAccount *entities.UserAccount
 	// get user by user id
 	if err := database.NewBoilerTransaction(ctx, func(ctx context.Context, tx boil.ContextTransactor) error {
 		var err error

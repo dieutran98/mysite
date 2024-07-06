@@ -2,7 +2,7 @@ package useraccountrepo
 
 import (
 	"context"
-	"mysite/models/pgmodel"
+	"mysite/entities"
 	"mysite/pkgs/database"
 	dbtest "mysite/testing/dbtest"
 	"testing"
@@ -13,7 +13,7 @@ import (
 )
 
 func generateTestData(ctx context.Context, tx boil.ContextTransactor) error {
-	userAccount := pgmodel.UserAccount{
+	userAccount := entities.UserAccount{
 		UserName:  "userName",
 		Password:  "password",
 		IsActive:  true,
@@ -30,7 +30,7 @@ func TestGetUserAccountByUserName(t *testing.T) {
 	ctx := dbtest.SetTestTransactionCtx(context.Background())
 
 	{ // found user
-		var userAccount *pgmodel.UserAccount
+		var userAccount *entities.UserAccount
 		err := database.NewBoilerTransaction(ctx, func(ctx context.Context, tx boil.ContextTransactor) error {
 			if err := generateTestData(ctx, tx); err != nil {
 				return errors.Wrap(err, "failed generate data")
@@ -50,7 +50,7 @@ func TestGetUserAccountByUserName(t *testing.T) {
 		require.Equal(t, "password", userAccount.Password)
 	}
 	{ // not found user
-		var userAccount *pgmodel.UserAccount
+		var userAccount *entities.UserAccount
 		err := database.NewBoilerTransaction(context.Background(), func(ctx context.Context, tx boil.ContextTransactor) error {
 
 			var err error
@@ -74,7 +74,7 @@ func TestGetActiveUserAccountByName(t *testing.T) {
 	ctx := dbtest.SetTestTransactionCtx(context.Background())
 
 	{ // found user
-		var userAccount *pgmodel.UserAccount
+		var userAccount *entities.UserAccount
 		err := database.NewBoilerTransaction(ctx, func(ctx context.Context, tx boil.ContextTransactor) error {
 			if err := generateTestData(ctx, tx); err != nil {
 				return errors.Wrap(err, "failed generate data")
@@ -94,7 +94,7 @@ func TestGetActiveUserAccountByName(t *testing.T) {
 		require.Equal(t, "password", userAccount.Password)
 	}
 	{ // not found user
-		var userAccount *pgmodel.UserAccount
+		var userAccount *entities.UserAccount
 		err := database.NewBoilerTransaction(context.Background(), func(ctx context.Context, tx boil.ContextTransactor) error {
 
 			var err error
@@ -118,9 +118,9 @@ func TestGetActiveUserAccountById(t *testing.T) {
 	ctx := dbtest.SetTestTransactionCtx(context.Background())
 
 	{ // found user
-		var userAccount *pgmodel.UserAccount
+		var userAccount *entities.UserAccount
 		err := database.NewBoilerTransaction(ctx, func(ctx context.Context, tx boil.ContextTransactor) error {
-			testUser := pgmodel.UserAccount{
+			testUser := entities.UserAccount{
 				UserName: "userName",
 				Password: "password",
 				IsActive: true,
@@ -140,7 +140,7 @@ func TestGetActiveUserAccountById(t *testing.T) {
 		require.Equal(t, "password", userAccount.Password)
 	}
 	{ // not found user
-		var userAccount *pgmodel.UserAccount
+		var userAccount *entities.UserAccount
 		err := database.NewBoilerTransaction(context.Background(), func(ctx context.Context, tx boil.ContextTransactor) error {
 
 			var err error

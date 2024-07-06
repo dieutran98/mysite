@@ -2,7 +2,7 @@ package useraccountrepo
 
 import (
 	"context"
-	"mysite/models/pgmodel"
+	"mysite/entities"
 	"mysite/pkgs/database"
 	dbtest "mysite/testing/dbtest"
 	"testing"
@@ -19,13 +19,13 @@ func TestInsert(t *testing.T) {
 	ctx := dbtest.SetTestTransactionCtx(context.Background())
 
 	{ // insert success
-		userAccount := pgmodel.UserAccount{
+		userAccount := entities.UserAccount{
 			UserName:  "userName",
 			Password:  "password",
 			IsActive:  true,
 			IsDeleted: false,
 		}
-		var result *pgmodel.UserAccount
+		var result *entities.UserAccount
 		err := database.NewBoilerTransaction(ctx, func(ctx context.Context, tx boil.ContextTransactor) error {
 			if err := repo.Insert(ctx, tx, &userAccount); err != nil {
 				return errors.Wrap(err, "failed insert userAccount")

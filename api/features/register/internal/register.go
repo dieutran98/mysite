@@ -3,8 +3,8 @@ package internal
 import (
 	"context"
 	"mysite/constants"
-	"mysite/models/model"
-	"mysite/models/pgmodel"
+	"mysite/dtos"
+	"mysite/entities"
 	"mysite/pkgs/auth"
 	"mysite/pkgs/database"
 	"mysite/pkgs/validate"
@@ -74,7 +74,7 @@ func (s service) Register(ctx context.Context) error {
 	return nil
 }
 
-func NewParams(req model.RegisterRequest) (*RegisterRequest, error) {
+func NewParams(req dtos.RegisterRequest) (*RegisterRequest, error) {
 	var result RegisterRequest
 	if err := mapstructure.Decode(req, &result); err != nil {
 		return nil, errors.Wrap(err, "failed mapping struct")
@@ -108,7 +108,7 @@ func (s service) registerUser(ctx context.Context, tx boil.ContextTransactor) er
 		return nil
 	}
 
-	user = &pgmodel.UserAccount{
+	user = &entities.UserAccount{
 		UserName:  s.req.UserName,
 		Password:  s.req.HashedPassword,
 		IsActive:  true,
@@ -122,7 +122,7 @@ func (s service) registerUser(ctx context.Context, tx boil.ContextTransactor) er
 		return nil
 	}
 
-	userInfo := pgmodel.UserInfo{
+	userInfo := entities.UserInfo{
 		Name:          null.StringFromPtr(s.req.Name),
 		Phone:         null.StringFromPtr(s.req.Phone),
 		Email:         null.StringFromPtr(s.req.Email),

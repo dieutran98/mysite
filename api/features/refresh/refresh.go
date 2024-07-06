@@ -3,8 +3,8 @@ package refresh
 import (
 	"context"
 	"log/slog"
+	"mysite/dtos"
 	"mysite/features/refresh/internal"
-	"mysite/models/model"
 	"mysite/pkgs/logger"
 	"mysite/utils/httputil"
 	"net/http"
@@ -29,7 +29,7 @@ func NewHandler() *api {
 }
 
 func (a api) Refresh(w http.ResponseWriter, r *http.Request) {
-	var body model.RefreshJSONRequestBody
+	var body dtos.RefreshJSONRequestBody
 	if err := httputil.ParseBody(r, &body); err != nil {
 		if err := render.Render(w, r, httputil.NewFailureRender(errors.Wrap(err, "failed to parse body"))); err != nil {
 			slog.Error("failed to render", logger.AttrError(err))

@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"mysite/models/model"
-	"mysite/models/pgmodel"
+	"mysite/dtos"
+	"mysite/entities"
 	"mysite/pkgs/auth"
 	"mysite/pkgs/database"
 	"mysite/testing/dbtest"
@@ -42,8 +42,8 @@ func TestLogin(t *testing.T) {
 
 	{ // login success
 		repoMock := &repomock.UserAccountRepoMock{}
-		repoMock.GetActiveUserAccountByNameFunc = func(ctx context.Context, tx boil.ContextTransactor, userName string) (*pgmodel.UserAccount, error) {
-			return &pgmodel.UserAccount{
+		repoMock.GetActiveUserAccountByNameFunc = func(ctx context.Context, tx boil.ContextTransactor, userName string) (*entities.UserAccount, error) {
+			return &entities.UserAccount{
 				ID: 1,
 			}, nil
 		}
@@ -76,7 +76,7 @@ func TestLogin(t *testing.T) {
 	}
 	{ // login failed, failed get user
 		repoMock := &repomock.UserAccountRepoMock{}
-		repoMock.GetActiveUserAccountByNameFunc = func(ctx context.Context, tx boil.ContextTransactor, userName string) (*pgmodel.UserAccount, error) {
+		repoMock.GetActiveUserAccountByNameFunc = func(ctx context.Context, tx boil.ContextTransactor, userName string) (*entities.UserAccount, error) {
 			return nil, errors.New("failed get user")
 		}
 
@@ -106,7 +106,7 @@ func TestLogin(t *testing.T) {
 	}
 	{ // login failed, failed get user
 		repoMock := &repomock.UserAccountRepoMock{}
-		repoMock.GetActiveUserAccountByNameFunc = func(ctx context.Context, tx boil.ContextTransactor, userName string) (*pgmodel.UserAccount, error) {
+		repoMock.GetActiveUserAccountByNameFunc = func(ctx context.Context, tx boil.ContextTransactor, userName string) (*entities.UserAccount, error) {
 			return nil, nil
 		}
 
@@ -137,8 +137,8 @@ func TestLogin(t *testing.T) {
 	}
 	{ // login failed, wrong password
 		repoMock := &repomock.UserAccountRepoMock{}
-		repoMock.GetActiveUserAccountByNameFunc = func(ctx context.Context, tx boil.ContextTransactor, userName string) (*pgmodel.UserAccount, error) {
-			return &pgmodel.UserAccount{
+		repoMock.GetActiveUserAccountByNameFunc = func(ctx context.Context, tx boil.ContextTransactor, userName string) (*entities.UserAccount, error) {
+			return &entities.UserAccount{
 				ID: 1,
 			}, nil
 		}
@@ -170,8 +170,8 @@ func TestLogin(t *testing.T) {
 	}
 	{ // login failed, check password error
 		repoMock := &repomock.UserAccountRepoMock{}
-		repoMock.GetActiveUserAccountByNameFunc = func(ctx context.Context, tx boil.ContextTransactor, userName string) (*pgmodel.UserAccount, error) {
-			return &pgmodel.UserAccount{
+		repoMock.GetActiveUserAccountByNameFunc = func(ctx context.Context, tx boil.ContextTransactor, userName string) (*entities.UserAccount, error) {
+			return &entities.UserAccount{
 				ID: 1,
 			}, nil
 		}
@@ -205,8 +205,8 @@ func TestLogin(t *testing.T) {
 	}
 	{ // login failed, create token failed
 		repoMock := &repomock.UserAccountRepoMock{}
-		repoMock.GetActiveUserAccountByNameFunc = func(ctx context.Context, tx boil.ContextTransactor, userName string) (*pgmodel.UserAccount, error) {
-			return &pgmodel.UserAccount{
+		repoMock.GetActiveUserAccountByNameFunc = func(ctx context.Context, tx boil.ContextTransactor, userName string) (*entities.UserAccount, error) {
+			return &entities.UserAccount{
 				ID: 1,
 			}, nil
 		}
@@ -240,8 +240,8 @@ func TestLogin(t *testing.T) {
 
 	{ // login failed, request body wrong
 		repoMock := &repomock.UserAccountRepoMock{}
-		repoMock.GetActiveUserAccountByNameFunc = func(ctx context.Context, tx boil.ContextTransactor, userName string) (*pgmodel.UserAccount, error) {
-			return &pgmodel.UserAccount{
+		repoMock.GetActiveUserAccountByNameFunc = func(ctx context.Context, tx boil.ContextTransactor, userName string) (*entities.UserAccount, error) {
+			return &entities.UserAccount{
 				ID: 1,
 			}, nil
 		}
@@ -278,7 +278,7 @@ func TestLogin(t *testing.T) {
 func TestNewParams(t *testing.T) {
 	require.NoError(t, database.SetupDatabase())
 	{ // success
-		result, err := NewParams(model.LoginRequest{
+		result, err := NewParams(dtos.LoginRequest{
 			Password: "password",
 			UserName: "userName",
 		})

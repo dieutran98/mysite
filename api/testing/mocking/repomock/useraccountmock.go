@@ -6,7 +6,7 @@ package repomock
 import (
 	"context"
 	"github.com/volatiletech/sqlboiler/v4/boil"
-	"mysite/models/pgmodel"
+	"mysite/entities"
 	"mysite/repositories/useraccountrepo"
 	"sync"
 )
@@ -21,19 +21,19 @@ var _ useraccountrepo.UserAccountRepo = &UserAccountRepoMock{}
 //
 //		// make and configure a mocked useraccountrepo.UserAccountRepo
 //		mockedUserAccountRepo := &UserAccountRepoMock{
-//			ActiveUserFunc: func(ctx context.Context, tx boil.ContextTransactor, pgUser pgmodel.UserAccount) error {
+//			ActiveUserFunc: func(ctx context.Context, tx boil.ContextTransactor, pgUser entities.UserAccount) error {
 //				panic("mock out the ActiveUser method")
 //			},
-//			GetActiveUserAccountByIdFunc: func(ctx context.Context, tx boil.ContextTransactor, userId int) (*pgmodel.UserAccount, error) {
+//			GetActiveUserAccountByIdFunc: func(ctx context.Context, tx boil.ContextTransactor, userId int) (*entities.UserAccount, error) {
 //				panic("mock out the GetActiveUserAccountById method")
 //			},
-//			GetActiveUserAccountByNameFunc: func(ctx context.Context, tx boil.ContextTransactor, userName string) (*pgmodel.UserAccount, error) {
+//			GetActiveUserAccountByNameFunc: func(ctx context.Context, tx boil.ContextTransactor, userName string) (*entities.UserAccount, error) {
 //				panic("mock out the GetActiveUserAccountByName method")
 //			},
-//			GetUserAccountByUserNameFunc: func(ctx context.Context, tx boil.ContextTransactor, userName string) (*pgmodel.UserAccount, error) {
+//			GetUserAccountByUserNameFunc: func(ctx context.Context, tx boil.ContextTransactor, userName string) (*entities.UserAccount, error) {
 //				panic("mock out the GetUserAccountByUserName method")
 //			},
-//			InsertFunc: func(ctx context.Context, tx boil.ContextTransactor, user *pgmodel.UserAccount) error {
+//			InsertFunc: func(ctx context.Context, tx boil.ContextTransactor, user *entities.UserAccount) error {
 //				panic("mock out the Insert method")
 //			},
 //		}
@@ -44,19 +44,19 @@ var _ useraccountrepo.UserAccountRepo = &UserAccountRepoMock{}
 //	}
 type UserAccountRepoMock struct {
 	// ActiveUserFunc mocks the ActiveUser method.
-	ActiveUserFunc func(ctx context.Context, tx boil.ContextTransactor, pgUser pgmodel.UserAccount) error
+	ActiveUserFunc func(ctx context.Context, tx boil.ContextTransactor, pgUser entities.UserAccount) error
 
 	// GetActiveUserAccountByIdFunc mocks the GetActiveUserAccountById method.
-	GetActiveUserAccountByIdFunc func(ctx context.Context, tx boil.ContextTransactor, userId int) (*pgmodel.UserAccount, error)
+	GetActiveUserAccountByIdFunc func(ctx context.Context, tx boil.ContextTransactor, userId int) (*entities.UserAccount, error)
 
 	// GetActiveUserAccountByNameFunc mocks the GetActiveUserAccountByName method.
-	GetActiveUserAccountByNameFunc func(ctx context.Context, tx boil.ContextTransactor, userName string) (*pgmodel.UserAccount, error)
+	GetActiveUserAccountByNameFunc func(ctx context.Context, tx boil.ContextTransactor, userName string) (*entities.UserAccount, error)
 
 	// GetUserAccountByUserNameFunc mocks the GetUserAccountByUserName method.
-	GetUserAccountByUserNameFunc func(ctx context.Context, tx boil.ContextTransactor, userName string) (*pgmodel.UserAccount, error)
+	GetUserAccountByUserNameFunc func(ctx context.Context, tx boil.ContextTransactor, userName string) (*entities.UserAccount, error)
 
 	// InsertFunc mocks the Insert method.
-	InsertFunc func(ctx context.Context, tx boil.ContextTransactor, user *pgmodel.UserAccount) error
+	InsertFunc func(ctx context.Context, tx boil.ContextTransactor, user *entities.UserAccount) error
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -67,7 +67,7 @@ type UserAccountRepoMock struct {
 			// Tx is the tx argument value.
 			Tx boil.ContextTransactor
 			// PgUser is the pgUser argument value.
-			PgUser pgmodel.UserAccount
+			PgUser entities.UserAccount
 		}
 		// GetActiveUserAccountById holds details about calls to the GetActiveUserAccountById method.
 		GetActiveUserAccountById []struct {
@@ -103,7 +103,7 @@ type UserAccountRepoMock struct {
 			// Tx is the tx argument value.
 			Tx boil.ContextTransactor
 			// User is the user argument value.
-			User *pgmodel.UserAccount
+			User *entities.UserAccount
 		}
 	}
 	lockActiveUser                 sync.RWMutex
@@ -114,14 +114,14 @@ type UserAccountRepoMock struct {
 }
 
 // ActiveUser calls ActiveUserFunc.
-func (mock *UserAccountRepoMock) ActiveUser(ctx context.Context, tx boil.ContextTransactor, pgUser pgmodel.UserAccount) error {
+func (mock *UserAccountRepoMock) ActiveUser(ctx context.Context, tx boil.ContextTransactor, pgUser entities.UserAccount) error {
 	if mock.ActiveUserFunc == nil {
 		panic("UserAccountRepoMock.ActiveUserFunc: method is nil but UserAccountRepo.ActiveUser was just called")
 	}
 	callInfo := struct {
 		Ctx    context.Context
 		Tx     boil.ContextTransactor
-		PgUser pgmodel.UserAccount
+		PgUser entities.UserAccount
 	}{
 		Ctx:    ctx,
 		Tx:     tx,
@@ -140,12 +140,12 @@ func (mock *UserAccountRepoMock) ActiveUser(ctx context.Context, tx boil.Context
 func (mock *UserAccountRepoMock) ActiveUserCalls() []struct {
 	Ctx    context.Context
 	Tx     boil.ContextTransactor
-	PgUser pgmodel.UserAccount
+	PgUser entities.UserAccount
 } {
 	var calls []struct {
 		Ctx    context.Context
 		Tx     boil.ContextTransactor
-		PgUser pgmodel.UserAccount
+		PgUser entities.UserAccount
 	}
 	mock.lockActiveUser.RLock()
 	calls = mock.calls.ActiveUser
@@ -154,7 +154,7 @@ func (mock *UserAccountRepoMock) ActiveUserCalls() []struct {
 }
 
 // GetActiveUserAccountById calls GetActiveUserAccountByIdFunc.
-func (mock *UserAccountRepoMock) GetActiveUserAccountById(ctx context.Context, tx boil.ContextTransactor, userId int) (*pgmodel.UserAccount, error) {
+func (mock *UserAccountRepoMock) GetActiveUserAccountById(ctx context.Context, tx boil.ContextTransactor, userId int) (*entities.UserAccount, error) {
 	if mock.GetActiveUserAccountByIdFunc == nil {
 		panic("UserAccountRepoMock.GetActiveUserAccountByIdFunc: method is nil but UserAccountRepo.GetActiveUserAccountById was just called")
 	}
@@ -194,7 +194,7 @@ func (mock *UserAccountRepoMock) GetActiveUserAccountByIdCalls() []struct {
 }
 
 // GetActiveUserAccountByName calls GetActiveUserAccountByNameFunc.
-func (mock *UserAccountRepoMock) GetActiveUserAccountByName(ctx context.Context, tx boil.ContextTransactor, userName string) (*pgmodel.UserAccount, error) {
+func (mock *UserAccountRepoMock) GetActiveUserAccountByName(ctx context.Context, tx boil.ContextTransactor, userName string) (*entities.UserAccount, error) {
 	if mock.GetActiveUserAccountByNameFunc == nil {
 		panic("UserAccountRepoMock.GetActiveUserAccountByNameFunc: method is nil but UserAccountRepo.GetActiveUserAccountByName was just called")
 	}
@@ -234,7 +234,7 @@ func (mock *UserAccountRepoMock) GetActiveUserAccountByNameCalls() []struct {
 }
 
 // GetUserAccountByUserName calls GetUserAccountByUserNameFunc.
-func (mock *UserAccountRepoMock) GetUserAccountByUserName(ctx context.Context, tx boil.ContextTransactor, userName string) (*pgmodel.UserAccount, error) {
+func (mock *UserAccountRepoMock) GetUserAccountByUserName(ctx context.Context, tx boil.ContextTransactor, userName string) (*entities.UserAccount, error) {
 	if mock.GetUserAccountByUserNameFunc == nil {
 		panic("UserAccountRepoMock.GetUserAccountByUserNameFunc: method is nil but UserAccountRepo.GetUserAccountByUserName was just called")
 	}
@@ -274,14 +274,14 @@ func (mock *UserAccountRepoMock) GetUserAccountByUserNameCalls() []struct {
 }
 
 // Insert calls InsertFunc.
-func (mock *UserAccountRepoMock) Insert(ctx context.Context, tx boil.ContextTransactor, user *pgmodel.UserAccount) error {
+func (mock *UserAccountRepoMock) Insert(ctx context.Context, tx boil.ContextTransactor, user *entities.UserAccount) error {
 	if mock.InsertFunc == nil {
 		panic("UserAccountRepoMock.InsertFunc: method is nil but UserAccountRepo.Insert was just called")
 	}
 	callInfo := struct {
 		Ctx  context.Context
 		Tx   boil.ContextTransactor
-		User *pgmodel.UserAccount
+		User *entities.UserAccount
 	}{
 		Ctx:  ctx,
 		Tx:   tx,
@@ -300,12 +300,12 @@ func (mock *UserAccountRepoMock) Insert(ctx context.Context, tx boil.ContextTran
 func (mock *UserAccountRepoMock) InsertCalls() []struct {
 	Ctx  context.Context
 	Tx   boil.ContextTransactor
-	User *pgmodel.UserAccount
+	User *entities.UserAccount
 } {
 	var calls []struct {
 		Ctx  context.Context
 		Tx   boil.ContextTransactor
-		User *pgmodel.UserAccount
+		User *entities.UserAccount
 	}
 	mock.lockInsert.RLock()
 	calls = mock.calls.Insert

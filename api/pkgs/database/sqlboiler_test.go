@@ -3,7 +3,7 @@ package database
 import (
 	"context"
 	"log/slog"
-	"mysite/models/pgmodel"
+	"mysite/entities"
 	"mysite/pkgs/logger"
 	"os"
 	"testing"
@@ -32,7 +32,7 @@ func TestNewBoilerTransaction(t *testing.T) {
 }
 
 func testSuccessQueries(ctx context.Context, tx boil.ContextTransactor) error {
-	user := pgmodel.UserAccount{
+	user := entities.UserAccount{
 		UserName: "test",
 		Password: "test",
 	}
@@ -40,7 +40,7 @@ func testSuccessQueries(ctx context.Context, tx boil.ContextTransactor) error {
 		return errors.Wrap(err, "failed insert user data")
 	}
 
-	userTest, err := pgmodel.UserAccounts(pgmodel.UserAccountWhere.ID.EQ(user.ID)).One(ctx, tx)
+	userTest, err := entities.UserAccounts(entities.UserAccountWhere.ID.EQ(user.ID)).One(ctx, tx)
 	if err != nil {
 		return errors.Wrap(err, "failed get user data inserted")
 	}

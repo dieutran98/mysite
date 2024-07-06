@@ -1,7 +1,7 @@
 package httputil
 
 import (
-	"mysite/models/model"
+	"mysite/dtos"
 	"mysite/utils/ptrconv"
 	"net/http"
 
@@ -13,7 +13,7 @@ type ErrResponse struct {
 	Err            error `json:"-"` // low-level runtime error
 	HTTPStatusCode int   `json:"-"` // http response status code
 
-	model.ErrorResponse
+	dtos.ErrorResponse
 }
 
 func (e ErrResponse) Render(w http.ResponseWriter, r *http.Request) error {

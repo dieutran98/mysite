@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"mysite/dtos"
 	"mysite/features/login/internal"
-	"mysite/models/model"
 	"mysite/utils/httputil"
 	"net/http"
 	"net/http/httptest"
@@ -60,7 +60,7 @@ func TestDashboardGetStores(t *testing.T) {
 				_url, err := url.Parse("http://example.com/api/v1/login")
 				require.NoError(t, err)
 				var buf bytes.Buffer
-				if err := json.NewEncoder(&buf).Encode(model.RegisterRequest{Password: "secret", UserName: "test@gmail.com"}); err != nil {
+				if err := json.NewEncoder(&buf).Encode(dtos.RegisterRequest{Password: "secret", UserName: "test@gmail.com"}); err != nil {
 					return nil, errors.Wrap(err, "failed encode body")
 				}
 
@@ -94,7 +94,7 @@ func TestDashboardGetStores(t *testing.T) {
 				_url, err := url.Parse("http://example.com/api/v1/login")
 				require.NoError(t, err)
 				var buf bytes.Buffer
-				if err := json.NewEncoder(&buf).Encode(model.RegisterRequest{Password: "secret", UserName: "test@gmail.com"}); err != nil {
+				if err := json.NewEncoder(&buf).Encode(dtos.RegisterRequest{Password: "secret", UserName: "test@gmail.com"}); err != nil {
 					return nil, errors.Wrap(err, "failed encode body")
 				}
 
@@ -113,7 +113,7 @@ func TestDashboardGetStores(t *testing.T) {
 				_url, err := url.Parse("http://example.com/api/v1/login")
 				require.NoError(t, err)
 				var buf bytes.Buffer
-				if err := json.NewEncoder(&buf).Encode(model.RegisterRequest{Password: "secret", UserName: "test@gmail.com"}); err != nil {
+				if err := json.NewEncoder(&buf).Encode(dtos.RegisterRequest{Password: "secret", UserName: "test@gmail.com"}); err != nil {
 					return nil, errors.Wrap(err, "failed encode body")
 				}
 

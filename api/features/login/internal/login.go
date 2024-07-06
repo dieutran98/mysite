@@ -2,8 +2,8 @@ package internal
 
 import (
 	"context"
-	"mysite/models/model"
-	"mysite/models/pgmodel"
+	"mysite/dtos"
+	"mysite/entities"
 	"mysite/pkgs/auth"
 	"mysite/pkgs/database"
 	"mysite/pkgs/env"
@@ -47,7 +47,7 @@ func NewService(req LoginRequest) service {
 	}
 }
 
-func NewParams(req model.LoginJSONRequestBody) (*LoginRequest, error) {
+func NewParams(req dtos.LoginJSONRequestBody) (*LoginRequest, error) {
 	var result LoginRequest
 	if err := mapstructure.Decode(req, &result); err != nil {
 		return nil, errors.Wrap(err, "failed decode")
@@ -62,7 +62,7 @@ func (s service) Login(ctx context.Context) (*LoginResponse, error) {
 		return nil, errors.Wrap(err, "failed validate login request")
 	}
 
-	var user *pgmodel.UserAccount
+	var user *entities.UserAccount
 	// get password from db by userName
 	if err := database.NewBoilerTransaction(ctx, func(ctx context.Context, tx boil.ContextTransactor) error {
 		var err error

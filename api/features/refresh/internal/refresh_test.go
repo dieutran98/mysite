@@ -3,8 +3,8 @@ package internal
 import (
 	"context"
 	"fmt"
-	"mysite/models/model"
-	"mysite/models/pgmodel"
+	"mysite/dtos"
+	"mysite/entities"
 	"mysite/pkgs/auth"
 	"mysite/pkgs/database"
 	"mysite/testing/dbtest"
@@ -41,8 +41,8 @@ func TestRefreshToken(t *testing.T) {
 
 	{ // refresh success
 		repoMock := &repomock.UserAccountRepoMock{}
-		repoMock.GetActiveUserAccountByIdFunc = func(ctx context.Context, tx boil.ContextTransactor, userId int) (*pgmodel.UserAccount, error) {
-			return &pgmodel.UserAccount{
+		repoMock.GetActiveUserAccountByIdFunc = func(ctx context.Context, tx boil.ContextTransactor, userId int) (*entities.UserAccount, error) {
+			return &entities.UserAccount{
 				ID: 1,
 			}, nil
 		}
@@ -90,8 +90,8 @@ func TestRefreshToken(t *testing.T) {
 	}
 	{ // refresh failed, parse token failed
 		repoMock := &repomock.UserAccountRepoMock{}
-		repoMock.GetActiveUserAccountByIdFunc = func(ctx context.Context, tx boil.ContextTransactor, userId int) (*pgmodel.UserAccount, error) {
-			return &pgmodel.UserAccount{
+		repoMock.GetActiveUserAccountByIdFunc = func(ctx context.Context, tx boil.ContextTransactor, userId int) (*entities.UserAccount, error) {
+			return &entities.UserAccount{
 				ID: 1,
 			}, nil
 		}
@@ -123,7 +123,7 @@ func TestRefreshToken(t *testing.T) {
 	}
 	{ // refresh failed, get user failed
 		repoMock := &repomock.UserAccountRepoMock{}
-		repoMock.GetActiveUserAccountByIdFunc = func(ctx context.Context, tx boil.ContextTransactor, userId int) (*pgmodel.UserAccount, error) {
+		repoMock.GetActiveUserAccountByIdFunc = func(ctx context.Context, tx boil.ContextTransactor, userId int) (*entities.UserAccount, error) {
 			return nil, errors.New("get user account failed")
 		}
 		authMock := &pkgmock.AuthServiceMock{}
@@ -159,8 +159,8 @@ func TestRefreshToken(t *testing.T) {
 	}
 	{ // refresh failed, createToken failed
 		repoMock := &repomock.UserAccountRepoMock{}
-		repoMock.GetActiveUserAccountByIdFunc = func(ctx context.Context, tx boil.ContextTransactor, userId int) (*pgmodel.UserAccount, error) {
-			return &pgmodel.UserAccount{
+		repoMock.GetActiveUserAccountByIdFunc = func(ctx context.Context, tx boil.ContextTransactor, userId int) (*entities.UserAccount, error) {
+			return &entities.UserAccount{
 				ID: 1,
 			}, nil
 		}
@@ -200,7 +200,7 @@ func TestRefreshToken(t *testing.T) {
 
 func TestNewParams(t *testing.T) {
 	{ // create params success
-		testReq := model.RefreshJSONRequestBody{
+		testReq := dtos.RefreshJSONRequestBody{
 			RefreshToken: "token",
 		}
 		req, err := NewParams(testReq)

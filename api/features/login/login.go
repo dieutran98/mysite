@@ -3,8 +3,8 @@ package login
 import (
 	"context"
 	"log/slog"
+	"mysite/dtos"
 	"mysite/features/login/internal"
-	"mysite/models/model"
 	"mysite/pkgs/logger"
 	"mysite/utils/httputil"
 	"net/http"
@@ -29,7 +29,7 @@ func NewHandler() *api {
 }
 
 func (a api) Login(w http.ResponseWriter, r *http.Request) {
-	var body model.LoginJSONRequestBody
+	var body dtos.LoginJSONRequestBody
 
 	if err := httputil.ParseBody(r, &body); err != nil {
 		if err := render.Render(w, r, httputil.NewFailureRender(errors.Wrap(err, "failed to parse body"))); err != nil {
