@@ -67,30 +67,19 @@ func (s service) Login(ctx context.Context) (*LoginResponse, error) {
 	if err := database.NewBoilerTransaction(ctx, func(ctx context.Context, tx boil.ContextTransactor) error {
 		var err error
 		user, err = s.repo.GetActiveUserAccountByName(ctx, tx, s.req.UserName)
-		if err != nil {
+		if err != nil || user == nil {
 			return errors.Wrap(httputil.ErrUnauthorize, "login failed at step 1")
-		}
-
-		if user == nil {
-			return errors.Wrap(httputil.ErrUnauthorize, "login failed at step 2")
 		}
 
 		return nil
 	}); err != nil {
 		return nil, err
 	}
-	if user == nil {
-		return nil, errors.New("user not found")
-	}
 
 	// check password hash
 	match, err := s.authSvc.ComparePasswordAndHash(s.req.Password, user.Password)
-	if err != nil {
-		return nil, errors.Wrap(httputil.ErrUnauthorize, "login failed at step 3")
-	}
-
-	if !match {
-		return nil, errors.Wrap(httputil.ErrUnauthorize, "login failed at step 4")
+	if err != nil || !match {
+		return nil, errors.Wrap(httputil.ErrUnauthorize, "login failed at step 2")
 	}
 
 	// generate access token and refresh token
