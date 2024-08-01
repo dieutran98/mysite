@@ -17,11 +17,11 @@ type api struct {
 }
 
 type service interface {
-	RefreshToken(ctx context.Context) (*internal.RefreshResponse, error)
+	RefreshToken(ctx context.Context, req internal.RefreshRequest) (*internal.RefreshResponse, error)
 }
 
-var newService = func(req internal.RefreshRequest) service {
-	return internal.NewService(req)
+var newService = func() service {
+	return internal.NewService()
 }
 
 func NewHandler() *api {
@@ -46,7 +46,7 @@ func (a api) Refresh(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := newService(*params).RefreshToken(r.Context())
+	resp, err := newService().RefreshToken(r.Context(), *params)
 	if err != nil {
 		if err := render.Render(w, r, httputil.NewFailureRender(errors.Wrap(err, "failed to refresh token"))); err != nil {
 			slog.Error("failed to render", logger.AttrError(err))
