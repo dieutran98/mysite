@@ -3,7 +3,7 @@ package internal
 import (
 	"net/http"
 
-	"mysite/models/model"
+	"mysite/dtos"
 	"mysite/utils/ptrconv"
 )
 
@@ -13,8 +13,8 @@ func NewService() *service {
 	return &service{}
 }
 
-func (s *service) HealthCheck() model.HealthResponse {
-	return model.HealthResponse{
+func (s *service) HealthCheck() dtos.HealthResponse {
+	return dtos.HealthResponse{
 		Message: ptrconv.String(http.StatusText(http.StatusOK)),
 	}
 }

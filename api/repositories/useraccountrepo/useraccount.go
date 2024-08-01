@@ -2,23 +2,23 @@ package useraccountrepo
 
 import (
 	"context"
-	"mysite/models/pgmodel"
+	"mysite/entities"
 
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type Get interface {
-	GetUserAccountByUserName(ctx context.Context, tx boil.ContextTransactor, userName string) (*pgmodel.UserAccount, error)
-	GetActiveUserAccountById(ctx context.Context, tx boil.ContextTransactor, userId int) (*pgmodel.UserAccount, error)
-	GetActiveUserAccountByName(ctx context.Context, tx boil.ContextTransactor, userName string) (*pgmodel.UserAccount, error)
+	GetUserAccountByUserName(ctx context.Context, tx boil.ContextTransactor, userName string) (*entities.UserAccount, error)
+	GetActiveUserAccountById(ctx context.Context, tx boil.ContextTransactor, userId int) (*entities.UserAccount, error)
+	GetActiveUserAccountByName(ctx context.Context, tx boil.ContextTransactor, userName string) (*entities.UserAccount, error)
 }
 
 type Insert interface {
-	Insert(ctx context.Context, tx boil.ContextTransactor, user *pgmodel.UserAccount) error
+	Insert(ctx context.Context, tx boil.ContextTransactor, user *entities.UserAccount) error
 }
 
 type Update interface {
-	ActiveUser(ctx context.Context, tx boil.ContextTransactor, pgUser pgmodel.UserAccount) error
+	ActiveUser(ctx context.Context, tx boil.ContextTransactor, pgUser entities.UserAccount) error
 }
 
 type Delete interface{}

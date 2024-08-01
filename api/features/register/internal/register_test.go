@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"testing"
 
-	"mysite/models/model"
-	"mysite/models/pgmodel"
+	"mysite/dtos"
+	"mysite/entities"
 	"mysite/pkgs/database"
 	"mysite/repositories/useraccountrepo"
 	"mysite/testing/dbtest"
@@ -47,11 +47,11 @@ func TestRegister(t *testing.T) {
 
 	{ // register success, active user
 		userAccountMock := &repomock.UserAccountRepoMock{}
-		userAccountMock.GetUserAccountByUserNameFunc = func(ctx context.Context, tx boil.ContextTransactor, userName string) (*pgmodel.UserAccount, error) {
-			return &pgmodel.UserAccount{IsActive: false}, nil
+		userAccountMock.GetUserAccountByUserNameFunc = func(ctx context.Context, tx boil.ContextTransactor, userName string) (*entities.UserAccount, error) {
+			return &entities.UserAccount{IsActive: false}, nil
 		}
-		userAccountMock.ActiveUserFunc = func(ctx context.Context, tx boil.ContextTransactor, pgUser pgmodel.UserAccount) error { return nil }
-		userAccountMock.InsertFunc = func(ctx context.Context, tx boil.ContextTransactor, user *pgmodel.UserAccount) error { return nil }
+		userAccountMock.ActiveUserFunc = func(ctx context.Context, tx boil.ContextTransactor, pgUser entities.UserAccount) error { return nil }
+		userAccountMock.InsertFunc = func(ctx context.Context, tx boil.ContextTransactor, user *entities.UserAccount) error { return nil }
 
 		authMock := &pkgmock.AuthServiceMock{}
 		authMock.HashPasswordFunc = func(password string) (string, error) { return "token", nil }
@@ -84,11 +84,11 @@ func TestRegister(t *testing.T) {
 
 	{ // register failed, active user failed
 		userAccountMock := &repomock.UserAccountRepoMock{}
-		userAccountMock.ActiveUserFunc = func(ctx context.Context, tx boil.ContextTransactor, pgUser pgmodel.UserAccount) error {
+		userAccountMock.ActiveUserFunc = func(ctx context.Context, tx boil.ContextTransactor, pgUser entities.UserAccount) error {
 			return errors.New("failed active user")
 		}
-		userAccountMock.GetUserAccountByUserNameFunc = func(ctx context.Context, tx boil.ContextTransactor, userName string) (*pgmodel.UserAccount, error) {
-			return &pgmodel.UserAccount{IsActive: false}, nil
+		userAccountMock.GetUserAccountByUserNameFunc = func(ctx context.Context, tx boil.ContextTransactor, userName string) (*entities.UserAccount, error) {
+			return &entities.UserAccount{IsActive: false}, nil
 		}
 
 		authMock := &pkgmock.AuthServiceMock{}
@@ -106,11 +106,11 @@ func TestRegister(t *testing.T) {
 
 	{ // register failed, create user failed
 		userAccountMock := &repomock.UserAccountRepoMock{}
-		userAccountMock.ActiveUserFunc = func(ctx context.Context, tx boil.ContextTransactor, pgUser pgmodel.UserAccount) error { return nil }
-		userAccountMock.InsertFunc = func(ctx context.Context, tx boil.ContextTransactor, user *pgmodel.UserAccount) error {
+		userAccountMock.ActiveUserFunc = func(ctx context.Context, tx boil.ContextTransactor, pgUser entities.UserAccount) error { return nil }
+		userAccountMock.InsertFunc = func(ctx context.Context, tx boil.ContextTransactor, user *entities.UserAccount) error {
 			return errors.New("Insert error failed")
 		}
-		userAccountMock.GetUserAccountByUserNameFunc = func(ctx context.Context, tx boil.ContextTransactor, userName string) (*pgmodel.UserAccount, error) {
+		userAccountMock.GetUserAccountByUserNameFunc = func(ctx context.Context, tx boil.ContextTransactor, userName string) (*entities.UserAccount, error) {
 			return nil, nil
 		}
 
@@ -129,8 +129,8 @@ func TestRegister(t *testing.T) {
 
 	{ // register failed, user exist
 		userAccountMock := &repomock.UserAccountRepoMock{}
-		userAccountMock.GetUserAccountByUserNameFunc = func(ctx context.Context, tx boil.ContextTransactor, userName string) (*pgmodel.UserAccount, error) {
-			return &pgmodel.UserAccount{IsActive: true, IsDeleted: false}, nil
+		userAccountMock.GetUserAccountByUserNameFunc = func(ctx context.Context, tx boil.ContextTransactor, userName string) (*entities.UserAccount, error) {
+			return &entities.UserAccount{IsActive: true, IsDeleted: false}, nil
 		}
 
 		authMock := &pkgmock.AuthServiceMock{}
@@ -148,7 +148,7 @@ func TestRegister(t *testing.T) {
 
 	{ // register failed, get user failed
 		userAccountMock := &repomock.UserAccountRepoMock{}
-		userAccountMock.GetUserAccountByUserNameFunc = func(ctx context.Context, tx boil.ContextTransactor, userName string) (*pgmodel.UserAccount, error) {
+		userAccountMock.GetUserAccountByUserNameFunc = func(ctx context.Context, tx boil.ContextTransactor, userName string) (*entities.UserAccount, error) {
 			return nil, errors.New("get user account failed")
 		}
 
@@ -167,10 +167,10 @@ func TestRegister(t *testing.T) {
 
 	{ // register failed, validate failed
 		userAccountMock := &repomock.UserAccountRepoMock{}
-		userAccountMock.ActiveUserFunc = func(ctx context.Context, tx boil.ContextTransactor, pgUser pgmodel.UserAccount) error { return nil }
-		userAccountMock.InsertFunc = func(ctx context.Context, tx boil.ContextTransactor, user *pgmodel.UserAccount) error { return nil }
-		userAccountMock.GetUserAccountByUserNameFunc = func(ctx context.Context, tx boil.ContextTransactor, userName string) (*pgmodel.UserAccount, error) {
-			return &pgmodel.UserAccount{IsActive: true, IsDeleted: false}, nil
+		userAccountMock.ActiveUserFunc = func(ctx context.Context, tx boil.ContextTransactor, pgUser entities.UserAccount) error { return nil }
+		userAccountMock.InsertFunc = func(ctx context.Context, tx boil.ContextTransactor, user *entities.UserAccount) error { return nil }
+		userAccountMock.GetUserAccountByUserNameFunc = func(ctx context.Context, tx boil.ContextTransactor, userName string) (*entities.UserAccount, error) {
+			return &entities.UserAccount{IsActive: true, IsDeleted: false}, nil
 		}
 
 		authMock := &pkgmock.AuthServiceMock{}
@@ -189,7 +189,7 @@ func TestRegister(t *testing.T) {
 
 func TestNewParams(t *testing.T) {
 	{ // success
-		result, err := NewParams(model.RegisterRequest{
+		result, err := NewParams(dtos.RegisterRequest{
 			Password: "secret",
 			UserName: "test@gmail.com",
 		})
@@ -199,12 +199,12 @@ func TestNewParams(t *testing.T) {
 		require.Equal(t, "test@gmail.com", result.UserName)
 	}
 	{ // empty data
-		result, err := NewParams(model.RegisterRequest{})
+		result, err := NewParams(dtos.RegisterRequest{})
 		require.NoError(t, err)
 		require.NotNil(t, result)
 	}
 	{ // success, has only passowrd
-		result, err := NewParams(model.RegisterRequest{
+		result, err := NewParams(dtos.RegisterRequest{
 			Password: "secret",
 		})
 		require.NoError(t, err)

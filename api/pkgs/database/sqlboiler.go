@@ -20,7 +20,9 @@ func newBoilerDb() error {
 }
 
 func NewBoilerTransaction(ctx context.Context, fn ExecuteQueriesFunc) error {
-	var cancel context.CancelFunc
+	var cancel context.CancelFunc = func() {
+		// do nothing
+	}
 	// // set timeout
 	if _, hasDeadline := ctx.Deadline(); !hasDeadline {
 		dbEnv := env.GetEnv().Database

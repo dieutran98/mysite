@@ -1,55 +1,92 @@
 package auth
 
 import (
-	"fmt"
-	"strconv"
-	"time"
+	"mysite/pkgs/env"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/pkg/errors"
 )
 
-type Claims struct {
-	jwt.RegisteredClaims
+type jwtHandler struct {
+	claims Claims
 }
 
-func (auth) NewClaims(userId int, expiredTime time.Time) Claims {
-	return Claims{
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(expiredTime),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			NotBefore: jwt.NewNumericDate(time.Now()),
-			Subject:   fmt.Sprintf("%d", userId),
-		},
+type Claims interface {
+	jwt.Claims
+	IsValid() bool
+	GetKeyType() KeyType
+}
+
+//go:generate moq -pkg pkgmock -out ../../testing/mocking/pkgmock/jwt.mock.go . JwtHandler
+type JwtHandler interface {
+	CreateToken() (string, error)
+	ParseToken(tokenString string, claims Claims) error
+	WithClaims(claims Claims) JwtHandler
+}
+
+func NewJwtHandler() JwtHandler {
+	return &jwtHandler{}
+}
+
+func (j jwtHandler) WithClaims(claims Claims) JwtHandler {
+	j.claims = claims
+	return &j
+}
+
+func (j *jwtHandler) CreateToken() (string, error) {
+	// validate claims
+	if !j.claims.IsValid() {
+		return "", errors.New("invalid claims")
 	}
-}
 
-func (auth) CreateToken(claims Claims, signingKey []byte) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signedStr, err := token.SignedString(signingKey)
-	return signedStr, err
-}
-
-func (auth) ParseToken(tokenStr string, signingKey []byte) (*Claims, error) {
-	token, err := jwt.ParseWithClaims(tokenStr, &Claims{}, func(t *jwt.Token) (interface{}, error) {
-		return signingKey, nil
-	})
+	// get jwt key
+	key, err := getJwtKey(j.claims.GetKeyType())
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to parse token")
+		return "", errors.Wrap(err, "failed get jwt key")
 	}
 
-	claims, ok := token.Claims.(*Claims)
+	return jwt.NewWithClaims(jwt.SigningMethodHS256, j.claims).SignedString(key)
+}
+
+func (j *jwtHandler) ParseToken(tokenString string, claims Claims) error {
+	token, err := jwt.ParseWithClaims(tokenString, claims, keyParser)
+	if err != nil {
+		return errors.Wrap(err, "failed parse token")
+	}
+
+	if !token.Valid {
+		return errors.New("invalid token")
+	}
+	return nil
+}
+
+func keyParser(token *jwt.Token) (interface{}, error) {
+	method, ok := token.Method.(*jwt.SigningMethodHMAC)
+	if !ok {
+		return nil, errors.Errorf("Unexpected signing method: %v", token.Header["alg"])
+	}
+	if method.Alg() != jwt.SigningMethodHS256.Name {
+		return nil, errors.New("the alg must be HS256")
+	}
+
+	claims, ok := token.Claims.(Claims)
 	if !ok {
 		return nil, errors.New("invalid claims")
 	}
 
-	return claims, nil
+	return getJwtKey(claims.GetKeyType())
 }
 
-func (c Claims) GetUserId() (int, error) {
-	id, err := strconv.Atoi(c.Subject)
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to convert string to int")
+func getJwtKey(keyType KeyType) ([]byte, error) {
+	envObj := env.GetEnv().Jwt
+	switch keyType {
+	case CursorKey:
+		return []byte(envObj.CursorKey), nil
+	case AccessKey:
+		return []byte(envObj.AccessKey), nil
+	case RefreshKey:
+		return []byte(envObj.RefreshKey), nil
+	default:
+		return nil, errors.New("unsupported key type")
 	}
-	return id, nil
 }

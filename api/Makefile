@@ -32,12 +32,12 @@ api-doc:
 	@\cp -rf ./schema/build/index.yml $(API_DOC)
 	@echo "Success!"
 
-modelgen: api-doc
-	@echo "Start modelgen..."
-	$(eval ModelDir := $(WORK_DIR)/models/model)
+dtogen: api-doc
+	@echo "Start dtogen..."
+	$(eval ModelDir := $(WORK_DIR)/dtos)
 	mkdir -p $(ModelDir)
-	oapi-codegen -generate types -package="model" $(API_DOC) > "$(ModelDir)/model.gen.go"
-	@echo "Success codegen! Check it out $(ModelDir)/model.gen.go"
+	oapi-codegen -generate types -package="dtos" $(API_DOC) > "$(ModelDir)/dtos.gen.go"
+	@echo "Success codegen! Check it out $(ModelDir)/dtos.gen.go"
 
 codegen-help:
 	@echo ""
@@ -56,12 +56,14 @@ codegen: api-doc
 	@$(call _codegen,$(tag),$(CODE_DIR))
 	@echo "Successful codegen! Check it out at $(CODE_DIR)/$(tag).gen.go"
 
-pgmodelgen:
-	@echo "Start pgmodel..."
-	PSQL_DBNAME=${POSTGRES_DB} PSQL_HOST=${POSTGRES_HOSTNAME} PSQL_USER=${POSTGRES_USER} PSQL_PASS=${POSTGRES_PASSWORD} PSQL_SSLMODE=${POSTGRES_SSL_MODE} sqlboiler psql --no-tests --wipe -o $(WORK_DIR)/models/pgmodel -p pgmodel
-	@echo "Success dbmodelgen! Check it out $(WORK_DIR)/models/pgmodel/*.go"
+entitygen:
+	@echo "Start entitygen..."
+	PSQL_DBNAME=${POSTGRES_DB} PSQL_HOST=${POSTGRES_HOSTNAME} PSQL_USER=${POSTGRES_USER} PSQL_PASS=${POSTGRES_PASSWORD} PSQL_SSLMODE=${POSTGRES_SSL_MODE} sqlboiler psql --no-tests --wipe -o $(WORK_DIR)/entities -p entities
+	@echo "Success dbmodelgen! Check it out $(WORK_DIR)/entities/*.go"
 
 lint:
 	golangci-lint run ./...
 test:
 	go test ./...
+genmock:
+	go generate ./...

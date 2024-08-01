@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"mysite/dtos"
 	"mysite/features/refresh/internal"
-	"mysite/models/model"
 	"mysite/utils/httputil"
 	"net/http"
 	"net/http/httptest"
@@ -23,7 +23,7 @@ type mockService struct {
 	RefreshTokenFunc func() (*internal.RefreshResponse, error)
 }
 
-func (m mockService) RefreshToken(ctx context.Context) (*internal.RefreshResponse, error) {
+func (m mockService) RefreshToken(ctx context.Context, req internal.RefreshRequest) (*internal.RefreshResponse, error) {
 	return m.RefreshTokenFunc()
 }
 
@@ -43,7 +43,7 @@ func TestDashboardGetStores(t *testing.T) {
 		name       string
 		req        func(context.Context) (*http.Request, error)
 		assert     func(*httptest.ResponseRecorder, *http.Request)
-		newService func(req internal.RefreshRequest) service
+		newService func() service
 	}{
 		{
 			name: "404",
@@ -60,7 +60,7 @@ func TestDashboardGetStores(t *testing.T) {
 				_url, err := url.Parse("http://example.com/api/v1/refresh")
 				require.NoError(t, err)
 				var buf bytes.Buffer
-				if err := json.NewEncoder(&buf).Encode(model.RefreshRequest{RefreshToken: "token"}); err != nil {
+				if err := json.NewEncoder(&buf).Encode(dtos.RefreshRequest{RefreshToken: "token"}); err != nil {
 					return nil, errors.Wrap(err, "failed encode body")
 				}
 
@@ -69,7 +69,7 @@ func TestDashboardGetStores(t *testing.T) {
 			assert: func(w *httptest.ResponseRecorder, r *http.Request) {
 				assert.Equal(t, http.StatusBadRequest, w.Result().StatusCode)
 			},
-			newService: func(req internal.RefreshRequest) service {
+			newService: func() service {
 				return mockService{RefreshTokenFunc: func() (*internal.RefreshResponse, error) { return nil, httputil.ErrInvalidRequest }}
 			},
 		},
@@ -84,7 +84,7 @@ func TestDashboardGetStores(t *testing.T) {
 			assert: func(w *httptest.ResponseRecorder, r *http.Request) {
 				assert.Equal(t, http.StatusBadRequest, w.Result().StatusCode)
 			},
-			newService: func(req internal.RefreshRequest) service {
+			newService: func() service {
 				return mockService{RefreshTokenFunc: func() (*internal.RefreshResponse, error) { return nil, nil }}
 			},
 		},
@@ -94,7 +94,7 @@ func TestDashboardGetStores(t *testing.T) {
 				_url, err := url.Parse("http://example.com/api/v1/refresh")
 				require.NoError(t, err)
 				var buf bytes.Buffer
-				if err := json.NewEncoder(&buf).Encode(model.RefreshRequest{RefreshToken: "token"}); err != nil {
+				if err := json.NewEncoder(&buf).Encode(dtos.RefreshRequest{RefreshToken: "token"}); err != nil {
 					return nil, errors.Wrap(err, "failed encode body")
 				}
 
@@ -103,7 +103,7 @@ func TestDashboardGetStores(t *testing.T) {
 			assert: func(w *httptest.ResponseRecorder, r *http.Request) {
 				assert.Equal(t, http.StatusInternalServerError, w.Result().StatusCode)
 			},
-			newService: func(req internal.RefreshRequest) service {
+			newService: func() service {
 				return mockService{RefreshTokenFunc: func() (*internal.RefreshResponse, error) { return nil, httputil.ErrInternal }}
 			},
 		},
@@ -113,7 +113,7 @@ func TestDashboardGetStores(t *testing.T) {
 				_url, err := url.Parse("http://example.com/api/v1/refresh")
 				require.NoError(t, err)
 				var buf bytes.Buffer
-				if err := json.NewEncoder(&buf).Encode(model.RefreshRequest{RefreshToken: "token"}); err != nil {
+				if err := json.NewEncoder(&buf).Encode(dtos.RefreshRequest{RefreshToken: "token"}); err != nil {
 					return nil, errors.Wrap(err, "failed encode body")
 				}
 
@@ -134,7 +134,7 @@ func TestDashboardGetStores(t *testing.T) {
 				require.True(t, found)
 
 			},
-			newService: func(req internal.RefreshRequest) service {
+			newService: func() service {
 				return mockService{RefreshTokenFunc: func() (*internal.RefreshResponse, error) {
 					return &internal.RefreshResponse{
 						AccessToken: "token",

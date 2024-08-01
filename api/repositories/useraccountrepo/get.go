@@ -3,18 +3,18 @@ package useraccountrepo
 import (
 	"context"
 	"database/sql"
-	"mysite/models/pgmodel"
+	"mysite/entities"
 
 	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
-func (u userAccountRepo) GetUserAccountByUserName(ctx context.Context, tx boil.ContextTransactor, userName string) (*pgmodel.UserAccount, error) {
+func (u userAccountRepo) GetUserAccountByUserName(ctx context.Context, tx boil.ContextTransactor, userName string) (*entities.UserAccount, error) {
 	mods := []qm.QueryMod{
-		pgmodel.UserAccountWhere.UserName.EQ(userName),
+		entities.UserAccountWhere.UserName.EQ(userName),
 	}
-	pgUserAccount, err := pgmodel.UserAccounts(mods...).One(ctx, tx)
+	pgUserAccount, err := entities.UserAccounts(mods...).One(ctx, tx)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, errors.Wrap(err, "failed check user exist")
 	}
@@ -22,14 +22,14 @@ func (u userAccountRepo) GetUserAccountByUserName(ctx context.Context, tx boil.C
 	return pgUserAccount, nil
 }
 
-func (u userAccountRepo) GetActiveUserAccountById(ctx context.Context, tx boil.ContextTransactor, userId int) (*pgmodel.UserAccount, error) {
+func (u userAccountRepo) GetActiveUserAccountById(ctx context.Context, tx boil.ContextTransactor, userId int) (*entities.UserAccount, error) {
 	mods := []qm.QueryMod{
-		pgmodel.UserAccountWhere.ID.EQ(userId),
-		pgmodel.UserAccountWhere.IsActive.EQ(true),
-		pgmodel.UserAccountWhere.IsDeleted.EQ(false),
+		entities.UserAccountWhere.ID.EQ(userId),
+		entities.UserAccountWhere.IsActive.EQ(true),
+		entities.UserAccountWhere.IsDeleted.EQ(false),
 	}
 
-	pgUserAccount, err := pgmodel.UserAccounts(mods...).One(ctx, tx)
+	pgUserAccount, err := entities.UserAccounts(mods...).One(ctx, tx)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get userAccount")
 	}
@@ -37,14 +37,14 @@ func (u userAccountRepo) GetActiveUserAccountById(ctx context.Context, tx boil.C
 	return pgUserAccount, nil
 }
 
-func (u userAccountRepo) GetActiveUserAccountByName(ctx context.Context, tx boil.ContextTransactor, userName string) (*pgmodel.UserAccount, error) {
+func (u userAccountRepo) GetActiveUserAccountByName(ctx context.Context, tx boil.ContextTransactor, userName string) (*entities.UserAccount, error) {
 	mods := []qm.QueryMod{
-		pgmodel.UserAccountWhere.UserName.EQ(userName),
-		pgmodel.UserAccountWhere.IsActive.EQ(true),
-		pgmodel.UserAccountWhere.IsDeleted.EQ(false),
+		entities.UserAccountWhere.UserName.EQ(userName),
+		entities.UserAccountWhere.IsActive.EQ(true),
+		entities.UserAccountWhere.IsDeleted.EQ(false),
 	}
 
-	pgUserAccount, err := pgmodel.UserAccounts(mods...).One(ctx, tx)
+	pgUserAccount, err := entities.UserAccounts(mods...).One(ctx, tx)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get userAccount")
 	}

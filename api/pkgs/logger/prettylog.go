@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"os"
 	"sync"
 	"time"
 
@@ -44,6 +45,7 @@ const (
 	BgWhite       Font = "\033[47m"
 	LightGreen    Font = "\033[92m"
 	Bold          Font = "\033[1m"
+	None          Font = "none"
 )
 
 type Option struct {
@@ -210,7 +212,12 @@ func (p *prettyHandler) printAttributes(ctx context.Context, record slog.Record)
 		return "", errors.Wrap(err, "failed handle json log")
 	}
 
-	return jsonFormat(buf.Bytes(), fontByLevel(record.Level))
+	switch p.writer.(type) {
+	case *os.File:
+		return jsonFormat(buf.Bytes(), None)
+	default:
+		return jsonFormat(buf.Bytes(), fontByLevel(record.Level))
+	}
 }
 
 func (f Font) String() string {
@@ -223,5 +230,11 @@ func jsonFormat(data []byte, font Font) (string, error) {
 		return "", errors.Wrap(err, "failed to indent json string")
 	}
 
-	return printFont(font, out.String()), nil
+	switch font {
+	case None:
+		return out.String(), nil
+	default:
+		return printFont(font, out.String()), nil
+	}
+
 }

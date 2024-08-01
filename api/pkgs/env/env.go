@@ -25,6 +25,8 @@ type database struct {
 type jwt struct {
 	AccessKey  string `json:"accessKey"`
 	RefreshKey string `json:"refreshKey"`
+	CursorKey  string `json:"cursorKey"`
+	Issuer     string `json:"issuer"`
 }
 
 type configure interface {

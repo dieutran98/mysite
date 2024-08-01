@@ -8,8 +8,8 @@ import (
 	"github.com/go-chi/render"
 	"github.com/pkg/errors"
 
+	"mysite/dtos"
 	"mysite/features/register/internal"
-	"mysite/models/model"
 	"mysite/pkgs/logger"
 	"mysite/utils/httputil"
 )
@@ -29,7 +29,7 @@ func NewHandler() *api {
 }
 
 func (a *api) Register(w http.ResponseWriter, r *http.Request) {
-	var body model.RegisterRequest
+	var body dtos.RegisterRequest
 	if err := httputil.ParseBody(r, &body); err != nil {
 		if err := render.Render(w, r, httputil.NewFailureRender(errors.Wrap(err, "failed to parse body"))); err != nil {
 			slog.Error("failed to render", logger.AttrError(err))

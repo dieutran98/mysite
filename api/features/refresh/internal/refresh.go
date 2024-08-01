@@ -2,14 +2,13 @@ package internal
 
 import (
 	"context"
-	"mysite/models/model"
-	"mysite/models/pgmodel"
+	"mysite/dtos"
 	"mysite/pkgs/auth"
 	"mysite/pkgs/database"
-	"mysite/pkgs/env"
 	"mysite/pkgs/validate"
 	"mysite/repositories/useraccountrepo"
 	"mysite/utils/httputil"
+	"strconv"
 	"time"
 
 	"github.com/mitchellh/mapstructure"
@@ -18,13 +17,12 @@ import (
 )
 
 type service struct {
-	repo    useraccountrepo.UserAccountRepo
-	req     RefreshRequest
-	authSvc auth.AuthService
+	repo       useraccountrepo.UserAccountRepo
+	jwtHandler auth.JwtHandler
 }
 
 type RefreshRequest struct {
-	RefreshToken string ` validate:"required"`
+	RefreshToken string `validate:"required"`
 }
 
 type RefreshResponse struct {
@@ -32,15 +30,14 @@ type RefreshResponse struct {
 	AccessToken string
 }
 
-func NewService(req RefreshRequest) service {
+func NewService() service {
 	return service{
-		repo:    useraccountrepo.NewRepo(),
-		req:     req,
-		authSvc: auth.NewAuthService(),
+		repo:       useraccountrepo.NewRepo(),
+		jwtHandler: auth.NewJwtHandler(),
 	}
 }
 
-func NewParams(req model.RefreshJSONRequestBody) (*RefreshRequest, error) {
+func NewParams(req dtos.RefreshJSONRequestBody) (*RefreshRequest, error) {
 	var result RefreshRequest
 	if err := mapstructure.Decode(req, &result); err != nil {
 		return nil, errors.Wrap(err, "failed decode")
@@ -49,29 +46,35 @@ func NewParams(req model.RefreshJSONRequestBody) (*RefreshRequest, error) {
 	return &result, nil
 }
 
-func (s service) RefreshToken(ctx context.Context) (*RefreshResponse, error) {
-	if err := validateParams(s.req); err != nil {
+func (s service) RefreshToken(ctx context.Context, req RefreshRequest) (*RefreshResponse, error) {
+	if err := validateParams(req); err != nil {
 		return nil, errors.Wrap(err, "failed validate refresh token request body")
 	}
 
-	jwtEnv := env.GetEnv().Jwt
 	// parse  token
-	claims, err := s.authSvc.ParseToken(s.req.RefreshToken, []byte(jwtEnv.RefreshKey))
+	var claims auth.CustomClaims[any]
+	claims.KeyType = auth.AccessKey
+
+	err := s.jwtHandler.ParseToken(req.RefreshToken, &claims)
 	if err != nil {
 		return nil, errors.Wrapf(httputil.ErrUnauthorize, "failed to parse token: %s", err.Error())
 	}
-	userId, err := claims.GetUserId()
+
+	// get userId from claims
+	userId, err := strconv.Atoi(claims.Subject)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get user Id")
 	}
 
-	var pgUserAccount *pgmodel.UserAccount
 	// get user by user id
 	if err := database.NewBoilerTransaction(ctx, func(ctx context.Context, tx boil.ContextTransactor) error {
 		var err error
-		pgUserAccount, err = s.repo.GetActiveUserAccountById(ctx, tx, userId)
+		pgUserAccount, err := s.repo.GetActiveUserAccountById(ctx, tx, userId)
 		if err != nil {
 			return errors.Wrap(err, "failed get userAccount")
+		}
+		if pgUserAccount == nil {
+			return errors.New("failed get userAccount")
 		}
 		return nil
 	}); err != nil {
@@ -79,7 +82,9 @@ func (s service) RefreshToken(ctx context.Context) (*RefreshResponse, error) {
 	}
 
 	// generate access token
-	accessToken, err := s.authSvc.CreateToken(s.authSvc.NewClaims(pgUserAccount.ID, time.Now().Add(time.Minute*15)), []byte(jwtEnv.AccessKey))
+	accessClaims := claims.Clone().WithExpireAt(time.Now().Add(time.Minute * 15))
+	claims.KeyType = auth.AccessKey
+	accessToken, err := s.jwtHandler.WithClaims(accessClaims).CreateToken()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed create access token")
 	}

@@ -6,7 +6,6 @@ package pkgmock
 import (
 	"mysite/pkgs/auth"
 	"sync"
-	"time"
 )
 
 // Ensure, that AuthServiceMock does implement auth.AuthService.
@@ -22,17 +21,8 @@ var _ auth.AuthService = &AuthServiceMock{}
 //			ComparePasswordAndHashFunc: func(password string, encodedHash string) (bool, error) {
 //				panic("mock out the ComparePasswordAndHash method")
 //			},
-//			CreateTokenFunc: func(claims auth.Claims, signingKey []byte) (string, error) {
-//				panic("mock out the CreateToken method")
-//			},
 //			HashPasswordFunc: func(password string) (string, error) {
 //				panic("mock out the HashPassword method")
-//			},
-//			NewClaimsFunc: func(userId int, expiredTime time.Time) auth.Claims {
-//				panic("mock out the NewClaims method")
-//			},
-//			ParseTokenFunc: func(tokenStr string, signingKey []byte) (*auth.Claims, error) {
-//				panic("mock out the ParseToken method")
 //			},
 //		}
 //
@@ -44,17 +34,8 @@ type AuthServiceMock struct {
 	// ComparePasswordAndHashFunc mocks the ComparePasswordAndHash method.
 	ComparePasswordAndHashFunc func(password string, encodedHash string) (bool, error)
 
-	// CreateTokenFunc mocks the CreateToken method.
-	CreateTokenFunc func(claims auth.Claims, signingKey []byte) (string, error)
-
 	// HashPasswordFunc mocks the HashPassword method.
 	HashPasswordFunc func(password string) (string, error)
-
-	// NewClaimsFunc mocks the NewClaims method.
-	NewClaimsFunc func(userId int, expiredTime time.Time) auth.Claims
-
-	// ParseTokenFunc mocks the ParseToken method.
-	ParseTokenFunc func(tokenStr string, signingKey []byte) (*auth.Claims, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -65,38 +46,14 @@ type AuthServiceMock struct {
 			// EncodedHash is the encodedHash argument value.
 			EncodedHash string
 		}
-		// CreateToken holds details about calls to the CreateToken method.
-		CreateToken []struct {
-			// Claims is the claims argument value.
-			Claims auth.Claims
-			// SigningKey is the signingKey argument value.
-			SigningKey []byte
-		}
 		// HashPassword holds details about calls to the HashPassword method.
 		HashPassword []struct {
 			// Password is the password argument value.
 			Password string
 		}
-		// NewClaims holds details about calls to the NewClaims method.
-		NewClaims []struct {
-			// UserId is the userId argument value.
-			UserId int
-			// ExpiredTime is the expiredTime argument value.
-			ExpiredTime time.Time
-		}
-		// ParseToken holds details about calls to the ParseToken method.
-		ParseToken []struct {
-			// TokenStr is the tokenStr argument value.
-			TokenStr string
-			// SigningKey is the signingKey argument value.
-			SigningKey []byte
-		}
 	}
 	lockComparePasswordAndHash sync.RWMutex
-	lockCreateToken            sync.RWMutex
 	lockHashPassword           sync.RWMutex
-	lockNewClaims              sync.RWMutex
-	lockParseToken             sync.RWMutex
 }
 
 // ComparePasswordAndHash calls ComparePasswordAndHashFunc.
@@ -135,42 +92,6 @@ func (mock *AuthServiceMock) ComparePasswordAndHashCalls() []struct {
 	return calls
 }
 
-// CreateToken calls CreateTokenFunc.
-func (mock *AuthServiceMock) CreateToken(claims auth.Claims, signingKey []byte) (string, error) {
-	if mock.CreateTokenFunc == nil {
-		panic("AuthServiceMock.CreateTokenFunc: method is nil but AuthService.CreateToken was just called")
-	}
-	callInfo := struct {
-		Claims     auth.Claims
-		SigningKey []byte
-	}{
-		Claims:     claims,
-		SigningKey: signingKey,
-	}
-	mock.lockCreateToken.Lock()
-	mock.calls.CreateToken = append(mock.calls.CreateToken, callInfo)
-	mock.lockCreateToken.Unlock()
-	return mock.CreateTokenFunc(claims, signingKey)
-}
-
-// CreateTokenCalls gets all the calls that were made to CreateToken.
-// Check the length with:
-//
-//	len(mockedAuthService.CreateTokenCalls())
-func (mock *AuthServiceMock) CreateTokenCalls() []struct {
-	Claims     auth.Claims
-	SigningKey []byte
-} {
-	var calls []struct {
-		Claims     auth.Claims
-		SigningKey []byte
-	}
-	mock.lockCreateToken.RLock()
-	calls = mock.calls.CreateToken
-	mock.lockCreateToken.RUnlock()
-	return calls
-}
-
 // HashPassword calls HashPasswordFunc.
 func (mock *AuthServiceMock) HashPassword(password string) (string, error) {
 	if mock.HashPasswordFunc == nil {
@@ -200,77 +121,5 @@ func (mock *AuthServiceMock) HashPasswordCalls() []struct {
 	mock.lockHashPassword.RLock()
 	calls = mock.calls.HashPassword
 	mock.lockHashPassword.RUnlock()
-	return calls
-}
-
-// NewClaims calls NewClaimsFunc.
-func (mock *AuthServiceMock) NewClaims(userId int, expiredTime time.Time) auth.Claims {
-	if mock.NewClaimsFunc == nil {
-		panic("AuthServiceMock.NewClaimsFunc: method is nil but AuthService.NewClaims was just called")
-	}
-	callInfo := struct {
-		UserId      int
-		ExpiredTime time.Time
-	}{
-		UserId:      userId,
-		ExpiredTime: expiredTime,
-	}
-	mock.lockNewClaims.Lock()
-	mock.calls.NewClaims = append(mock.calls.NewClaims, callInfo)
-	mock.lockNewClaims.Unlock()
-	return mock.NewClaimsFunc(userId, expiredTime)
-}
-
-// NewClaimsCalls gets all the calls that were made to NewClaims.
-// Check the length with:
-//
-//	len(mockedAuthService.NewClaimsCalls())
-func (mock *AuthServiceMock) NewClaimsCalls() []struct {
-	UserId      int
-	ExpiredTime time.Time
-} {
-	var calls []struct {
-		UserId      int
-		ExpiredTime time.Time
-	}
-	mock.lockNewClaims.RLock()
-	calls = mock.calls.NewClaims
-	mock.lockNewClaims.RUnlock()
-	return calls
-}
-
-// ParseToken calls ParseTokenFunc.
-func (mock *AuthServiceMock) ParseToken(tokenStr string, signingKey []byte) (*auth.Claims, error) {
-	if mock.ParseTokenFunc == nil {
-		panic("AuthServiceMock.ParseTokenFunc: method is nil but AuthService.ParseToken was just called")
-	}
-	callInfo := struct {
-		TokenStr   string
-		SigningKey []byte
-	}{
-		TokenStr:   tokenStr,
-		SigningKey: signingKey,
-	}
-	mock.lockParseToken.Lock()
-	mock.calls.ParseToken = append(mock.calls.ParseToken, callInfo)
-	mock.lockParseToken.Unlock()
-	return mock.ParseTokenFunc(tokenStr, signingKey)
-}
-
-// ParseTokenCalls gets all the calls that were made to ParseToken.
-// Check the length with:
-//
-//	len(mockedAuthService.ParseTokenCalls())
-func (mock *AuthServiceMock) ParseTokenCalls() []struct {
-	TokenStr   string
-	SigningKey []byte
-} {
-	var calls []struct {
-		TokenStr   string
-		SigningKey []byte
-	}
-	mock.lockParseToken.RLock()
-	calls = mock.calls.ParseToken
-	mock.lockParseToken.RUnlock()
 	return calls
 }

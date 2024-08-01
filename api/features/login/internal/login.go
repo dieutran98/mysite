@@ -2,14 +2,16 @@ package internal
 
 import (
 	"context"
-	"mysite/models/model"
-	"mysite/models/pgmodel"
+	"log/slog"
+	"mysite/dtos"
+	"mysite/entities"
 	"mysite/pkgs/auth"
 	"mysite/pkgs/database"
-	"mysite/pkgs/env"
+	"mysite/pkgs/logger"
 	"mysite/pkgs/validate"
 	"mysite/repositories/useraccountrepo"
 	"mysite/utils/httputil"
+	"strconv"
 	"time"
 
 	"github.com/friendsofgo/errors"
@@ -18,9 +20,10 @@ import (
 )
 
 type service struct {
-	repo    useraccountrepo.UserAccountRepo
-	req     LoginRequest
-	authSvc auth.AuthService
+	repo       useraccountrepo.UserAccountRepo
+	req        LoginRequest
+	authSvc    auth.AuthService
+	jwtHandler auth.JwtHandler
 }
 
 type LoginRequest struct {
@@ -39,15 +42,16 @@ type LoginResponse struct {
 	RefreshToken string
 }
 
-func NewService(req LoginRequest) service {
-	return service{
-		repo:    useraccountrepo.NewRepo(),
-		req:     req,
-		authSvc: auth.NewAuthService(),
+func NewService(req LoginRequest) *service {
+	return &service{
+		repo:       useraccountrepo.NewRepo(),
+		req:        req,
+		authSvc:    auth.NewAuthService(),
+		jwtHandler: auth.NewJwtHandler(),
 	}
 }
 
-func NewParams(req model.LoginJSONRequestBody) (*LoginRequest, error) {
+func NewParams(req dtos.LoginJSONRequestBody) (*LoginRequest, error) {
 	var result LoginRequest
 	if err := mapstructure.Decode(req, &result); err != nil {
 		return nil, errors.Wrap(err, "failed decode")
@@ -56,23 +60,19 @@ func NewParams(req model.LoginJSONRequestBody) (*LoginRequest, error) {
 	return &result, nil
 }
 
-func (s service) Login(ctx context.Context) (*LoginResponse, error) {
+func (s *service) Login(ctx context.Context) (*LoginResponse, error) {
 	// validate params
 	if err := validateParams(s.req); err != nil {
 		return nil, errors.Wrap(err, "failed validate login request")
 	}
 
-	var user *pgmodel.UserAccount
+	var user *entities.UserAccount
 	// get password from db by userName
 	if err := database.NewBoilerTransaction(ctx, func(ctx context.Context, tx boil.ContextTransactor) error {
 		var err error
 		user, err = s.repo.GetActiveUserAccountByName(ctx, tx, s.req.UserName)
-		if err != nil {
+		if err != nil || user == nil {
 			return errors.Wrap(httputil.ErrUnauthorize, "login failed at step 1")
-		}
-
-		if user == nil {
-			return errors.Wrap(httputil.ErrUnauthorize, "login failed at step 2")
 		}
 
 		return nil
@@ -82,27 +82,15 @@ func (s service) Login(ctx context.Context) (*LoginResponse, error) {
 
 	// check password hash
 	match, err := s.authSvc.ComparePasswordAndHash(s.req.Password, user.Password)
-	if err != nil {
-		return nil, errors.Wrap(httputil.ErrUnauthorize, "login failed at step 3")
-	}
-
-	if !match {
-		return nil, errors.Wrap(httputil.ErrUnauthorize, "login failed at step 4")
+	if err != nil || !match {
+		return nil, errors.Wrap(httputil.ErrUnauthorize, "login failed at step 2")
 	}
 
 	// generate access token and refresh token
-	jwtEnv := env.GetEnv().Jwt
-
-	accessKeyExpireTime := time.Now().Add(15 * time.Minute)
-	accessToken, err := s.authSvc.CreateToken(s.authSvc.NewClaims(user.ID, accessKeyExpireTime), []byte(jwtEnv.AccessKey))
+	accessToken, refreshToken, err := s.generateToken(user.ID)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed create accessKey")
-	}
-
-	refreshKeyExpireTime := time.Now().Add(72 * time.Hour)
-	refreshToken, err := s.authSvc.CreateToken(s.authSvc.NewClaims(user.ID, refreshKeyExpireTime), []byte(jwtEnv.RefreshKey))
-	if err != nil {
-		return nil, errors.Wrap(err, "failed create refreshKey")
+		slog.Error("failed generate token", logger.AttrError(err))
+		return nil, errors.Wrap(httputil.ErrUnauthorize, "login failed at step 3")
 	}
 
 	return &LoginResponse{
@@ -116,4 +104,25 @@ func validateParams(params LoginRequest) error {
 		return errors.Wrap(httputil.ErrInvalidRequest, err.Error())
 	}
 	return nil
+}
+
+func (s *service) generateToken(userId int) (accessToken string, refreshToken string, err error) {
+	claims := auth.NewCustomClaims[any]()
+	claims.Subject = strconv.Itoa(userId)
+	accessClaims := claims.Clone().WithExpireAt(time.Now().Add(15 * time.Minute))
+	accessClaims.KeyType = auth.AccessKey
+
+	accessToken, err = s.jwtHandler.WithClaims(accessClaims).CreateToken()
+	if err != nil {
+		return "", "", errors.Wrap(err, "failed create accessKey")
+	}
+
+	refreshClaims := claims.Clone().WithExpireAt(time.Now().Add(72 * time.Hour))
+	refreshClaims.KeyType = auth.RefreshKey
+	refreshToken, err = s.jwtHandler.WithClaims(refreshClaims).CreateToken()
+	if err != nil {
+		return "", "", errors.Wrap(err, "failed create refreshKey")
+	}
+
+	return
 }
