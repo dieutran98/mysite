@@ -36,12 +36,11 @@ func TestRefreshToken(t *testing.T) {
 	t.Parallel()
 	require.NoError(t, database.SetupDatabase())
 	ctx := dbtest.SetTestTransactionCtx(context.Background())
+	req := RefreshRequest{
+		RefreshToken: "refresh-token",
+	}
 
 	{ // refresh success
-		req := RefreshRequest{
-			RefreshToken: "refresh-token",
-		}
-
 		repoMock := &repomock.UserAccountRepoMock{}
 		repoMock.GetActiveUserAccountByIdFunc = func(ctx context.Context, tx boil.ContextTransactor, userId int) (*entities.UserAccount, error) {
 			return &entities.UserAccount{
@@ -79,9 +78,6 @@ func TestRefreshToken(t *testing.T) {
 		require.Nil(t, resp)
 	}
 	{ // refresh failed, parse token failed
-		req := RefreshRequest{
-			RefreshToken: "refresh-token",
-		}
 		repoMock := &repomock.UserAccountRepoMock{}
 		repoMock.GetActiveUserAccountByIdFunc = func(ctx context.Context, tx boil.ContextTransactor, userId int) (*entities.UserAccount, error) {
 			return &entities.UserAccount{
@@ -104,9 +100,6 @@ func TestRefreshToken(t *testing.T) {
 		require.Nil(t, resp)
 	}
 	{ // refresh failed, get user failed
-		req := RefreshRequest{
-			RefreshToken: "refresh-token",
-		}
 		repoMock := &repomock.UserAccountRepoMock{}
 		repoMock.GetActiveUserAccountByIdFunc = func(ctx context.Context, tx boil.ContextTransactor, userId int) (*entities.UserAccount, error) {
 			return nil, errors.New("get user account failed")
@@ -127,9 +120,6 @@ func TestRefreshToken(t *testing.T) {
 		require.Nil(t, resp)
 	}
 	{ // refresh failed, createToken failed
-		req := RefreshRequest{
-			RefreshToken: "refresh-token",
-		}
 		repoMock := &repomock.UserAccountRepoMock{}
 		repoMock.GetActiveUserAccountByIdFunc = func(ctx context.Context, tx boil.ContextTransactor, userId int) (*entities.UserAccount, error) {
 			return &entities.UserAccount{
