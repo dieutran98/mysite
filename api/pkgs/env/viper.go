@@ -37,6 +37,7 @@ func (v viperConfig) setDefault() error {
 	v.viperCfg.SetDefault("database.connmaxopen", 100)
 	v.viperCfg.SetDefault("database.sslmode", "disable")
 	v.viperCfg.SetDefault("database.port", "5432")
+	v.viperCfg.SetDefault("jwt.issuer", "mysite")
 	return nil
 }
 

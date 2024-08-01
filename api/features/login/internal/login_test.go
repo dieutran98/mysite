@@ -2,9 +2,9 @@ package internal
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
-	"time"
 
 	"mysite/dtos"
 	"mysite/entities"
@@ -15,8 +15,6 @@ import (
 	"mysite/testing/mocking/repomock"
 	"mysite/utils/httputil"
 
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
@@ -50,18 +48,16 @@ func TestLogin(t *testing.T) {
 
 		authMock := &pkgmock.AuthServiceMock{}
 		authMock.ComparePasswordAndHashFunc = func(password, encodedHash string) (bool, error) { return true, nil }
-		authMock.CreateTokenFunc = func(claims auth.Claims, signingKey []byte) (string, error) { return "token", nil }
-		authMock.NewClaimsFunc = func(userId int, expiredTime time.Time) auth.Claims {
-			return auth.Claims{
-				RegisteredClaims: jwt.RegisteredClaims{
-					Subject: "user-id",
-				},
-			}
-		}
+
+		jwtMock := &pkgmock.JwtHandlerMock{}
+		jwtMock.CreateTokenFunc = func() (string, error) { return "token", nil }
+		jwtMock.ParseTokenFunc = func(tokenString string, claims auth.Claims) error { return nil }
+		jwtMock.WithClaimsFunc = func(claims auth.Claims) auth.JwtHandler { return jwtMock }
 
 		svc := service{
-			repo:    repoMock,
-			authSvc: authMock,
+			repo:       repoMock,
+			authSvc:    authMock,
+			jwtHandler: jwtMock,
 			req: LoginRequest{
 				Password: "password",
 				UserName: "test@gmail.com",
@@ -81,18 +77,13 @@ func TestLogin(t *testing.T) {
 		}
 
 		authMock := &pkgmock.AuthServiceMock{}
-		authMock.ComparePasswordAndHashFunc = func(password, encodedHash string) (bool, error) { return true, nil }
-		authMock.CreateTokenFunc = func(claims auth.Claims, signingKey []byte) (string, error) { return "token", nil }
-		authMock.NewClaimsFunc = func(userId int, expiredTime time.Time) auth.Claims {
-			return auth.Claims{
-				RegisteredClaims: jwt.RegisteredClaims{
-					Subject: "user-id",
-				},
-			}
-		}
+
+		jwtMock := &pkgmock.JwtHandlerMock{}
+
 		svc := service{
-			repo:    repoMock,
-			authSvc: authMock,
+			repo:       repoMock,
+			authSvc:    authMock,
+			jwtHandler: jwtMock,
 			req: LoginRequest{
 				Password: "password",
 				UserName: "test@gmail.com",
@@ -112,18 +103,13 @@ func TestLogin(t *testing.T) {
 
 		authMock := &pkgmock.AuthServiceMock{}
 		authMock.ComparePasswordAndHashFunc = func(password, encodedHash string) (bool, error) { return true, nil }
-		authMock.CreateTokenFunc = func(claims auth.Claims, signingKey []byte) (string, error) { return "token", nil }
-		authMock.NewClaimsFunc = func(userId int, expiredTime time.Time) auth.Claims {
-			return auth.Claims{
-				RegisteredClaims: jwt.RegisteredClaims{
-					Subject: "user-id",
-				},
-			}
-		}
+
+		jwtMock := &pkgmock.JwtHandlerMock{}
 
 		svc := service{
-			repo:    repoMock,
-			authSvc: authMock,
+			repo:       repoMock,
+			authSvc:    authMock,
+			jwtHandler: jwtMock,
 			req: LoginRequest{
 				Password: "password",
 				UserName: "test@gmail.com",
@@ -145,18 +131,13 @@ func TestLogin(t *testing.T) {
 
 		authMock := &pkgmock.AuthServiceMock{}
 		authMock.ComparePasswordAndHashFunc = func(password, encodedHash string) (bool, error) { return false, nil }
-		authMock.CreateTokenFunc = func(claims auth.Claims, signingKey []byte) (string, error) { return "token", nil }
-		authMock.NewClaimsFunc = func(userId int, expiredTime time.Time) auth.Claims {
-			return auth.Claims{
-				RegisteredClaims: jwt.RegisteredClaims{
-					Subject: "user-id",
-				},
-			}
-		}
+
+		jwtMock := &pkgmock.JwtHandlerMock{}
 
 		svc := service{
-			repo:    repoMock,
-			authSvc: authMock,
+			repo:       repoMock,
+			authSvc:    authMock,
+			jwtHandler: jwtMock,
 			req: LoginRequest{
 				Password: "password",
 				UserName: "test@gmail.com",
@@ -180,18 +161,13 @@ func TestLogin(t *testing.T) {
 		authMock.ComparePasswordAndHashFunc = func(password, encodedHash string) (bool, error) {
 			return false, errors.New("check pass error")
 		}
-		authMock.CreateTokenFunc = func(claims auth.Claims, signingKey []byte) (string, error) { return "token", nil }
-		authMock.NewClaimsFunc = func(userId int, expiredTime time.Time) auth.Claims {
-			return auth.Claims{
-				RegisteredClaims: jwt.RegisteredClaims{
-					Subject: "user-id",
-				},
-			}
-		}
+
+		jwtMock := &pkgmock.JwtHandlerMock{}
 
 		svc := service{
-			repo:    repoMock,
-			authSvc: authMock,
+			repo:       repoMock,
+			authSvc:    authMock,
+			jwtHandler: jwtMock,
 			req: LoginRequest{
 				Password: "password",
 				UserName: "test@gmail.com",
@@ -213,20 +189,17 @@ func TestLogin(t *testing.T) {
 
 		authMock := &pkgmock.AuthServiceMock{}
 		authMock.ComparePasswordAndHashFunc = func(password, encodedHash string) (bool, error) { return true, nil }
-		authMock.CreateTokenFunc = func(claims auth.Claims, signingKey []byte) (string, error) {
+
+		jwtMock := &pkgmock.JwtHandlerMock{}
+		jwtMock.CreateTokenFunc = func() (string, error) {
 			return "", errors.New("create token failed")
 		}
-		authMock.NewClaimsFunc = func(userId int, expiredTime time.Time) auth.Claims {
-			return auth.Claims{
-				RegisteredClaims: jwt.RegisteredClaims{
-					Subject: "user-id",
-				},
-			}
-		}
+		jwtMock.WithClaimsFunc = func(claims auth.Claims) auth.JwtHandler { return jwtMock }
 
 		svc := service{
-			repo:    repoMock,
-			authSvc: authMock,
+			repo:       repoMock,
+			authSvc:    authMock,
+			jwtHandler: jwtMock,
 			req: LoginRequest{
 				Password: "password",
 				UserName: "test@gmail.com",
@@ -248,20 +221,13 @@ func TestLogin(t *testing.T) {
 
 		authMock := &pkgmock.AuthServiceMock{}
 		authMock.ComparePasswordAndHashFunc = func(password, encodedHash string) (bool, error) { return true, nil }
-		authMock.CreateTokenFunc = func(claims auth.Claims, signingKey []byte) (string, error) {
-			return "", errors.New("create token failed")
-		}
-		authMock.NewClaimsFunc = func(userId int, expiredTime time.Time) auth.Claims {
-			return auth.Claims{
-				RegisteredClaims: jwt.RegisteredClaims{
-					Subject: "user-id",
-				},
-			}
-		}
+
+		jwtMock := &pkgmock.JwtHandlerMock{}
 
 		svc := service{
-			repo:    repoMock,
-			authSvc: authMock,
+			repo:       repoMock,
+			authSvc:    authMock,
+			jwtHandler: jwtMock,
 			req: LoginRequest{
 				Password: "",
 				UserName: "test",

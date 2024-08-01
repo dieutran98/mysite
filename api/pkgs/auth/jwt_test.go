@@ -5,35 +5,27 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/require"
 )
 
-func TestJWT(t *testing.T) {
-	svc := auth{}
-
-	{ // success create token and parse it
-		userId := 1
-		signKey := "secret-key"
-		tokenStr, err := svc.CreateToken(svc.NewClaims(userId, time.Now().Add(15*time.Minute)), []byte(signKey))
-		require.NoError(t, err)
-		require.NotEmpty(t, tokenStr)
-
-		claims, err := svc.ParseToken(tokenStr, []byte(signKey))
-		require.NoError(t, err)
-		require.NotNil(t, claims)
-		require.Equal(t, fmt.Sprintf("%d", userId), claims.Subject)
-	}
+type myClaims struct {
+	Foo string `json:"foo"`
 }
 
-func TestGetUserId(t *testing.T) {
-	claim := Claims{
-		RegisteredClaims: jwt.RegisteredClaims{
-			Subject: "1",
-		},
-	}
+func TestJwt(t *testing.T) {
+	metaData := myClaims{Foo: "bar"}
+	claimsA := NewCustomClaims[myClaims]().WithExpireAt(time.Now().Add(time.Hour))
+	claimsA.MetaData = metaData
+	claimsA.KeyType = CursorKey
 
-	id, err := claim.GetUserId()
+	tokenStr, err := NewJwtHandler().WithClaims(claimsA).CreateToken()
 	require.NoError(t, err)
-	require.Equal(t, 1, id)
+
+	fmt.Println(string(tokenStr))
+
+	var claimsB CustomClaims[myClaims]
+	err = NewJwtHandler().ParseToken(tokenStr, &claimsB)
+	require.NoError(t, err)
+	require.Equal(t, claimsA, &claimsB)
+
 }
